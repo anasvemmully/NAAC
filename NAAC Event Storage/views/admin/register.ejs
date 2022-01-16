@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <title><%= title %></title>
+    <script>
+        function validateForm(e) {
+            e.preventDefault();
+            let username = document.forms["register"]["username"].value;
+            let email = document.forms["register"]["email"].value;
+            let password1 = document.forms["register"]["password1"].value;
+            let password2 = document.forms["register"]["password2"].value;
+            let error = document.getElementById("error");
+            if (username == "" || email == "" || password1 == "" || password2 == "") {
+                error.innerText = "* All fields are required";
+                return false;
+            }
+            else if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+                error.innerText = "* Invalid email";
+                return false;
+            }
+            else if (password1 != password2) {
+                error.innerText = "* Passwords do not match";
+                return false;
+            }
+            else if (password1.length < 8) {
+                error.innerText = "* Password must be at least 8 characters";
+                return false;
+            }
+            else if (username.length < 3) {
+                error.innerText = "* Username must be at least 3 characters";
+                return false;
+            }
+            else {
+                console.log("Form submitted");
+                document.forms["register"].submit();
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="register-form">
+        <form action="/api/register" name="register" method="post">
+            <table>
+                <tr>
+                    <div id="error" style="color:red"><%= typeof error !==undefined ? error : "" %></div>
+                </tr>
+                <tr>
+                    <td>Username</td>
+                    <td>: <input type="text" name="username"></td>
+                </tr>
+                <tr>
+                    <td>Email</td>
+                    <td>: <input type="email" name="email"></td>
+                </tr>
+                <tr>
+                    <td>Password</td>
+                    <td>: <input type="password" name="password1"></td>
+                </tr>
+                <tr>
+                    <td>Confirm Password</td>
+                    <td>: <input type="password" name="password2"></td>
+                </tr>
+                <tr>
+                    <td><br/><button type="submit" onclick="validateForm(event)">Submit</button></td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</body>
+
+</html>

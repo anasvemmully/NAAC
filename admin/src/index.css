@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+.form-center{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform : translate(-50%,-50%);
+    padding: 2rem 1rem 1rem 1rem;
+    border: 1px solid black;
+    border-radius: 8px;
+}
+
+.form-input{
+    display: block;
+    margin: 1rem;   
+}
+.form-input > input[type="text"] ,
+.form-input > input[type="email"] ,
+.form-input > input[type="password"]{
+    border: 1px solid black;
+    border-radius: 4px;
+    padding: .4rem;
+}
+.form-divertion{
+    color : rgb(92, 91, 91);
+    font-size: small;
+}
+.form-button{
+    background-color: rgb(62, 49, 180);
+    color: white;
+    border-radius: 8px;
+    padding: .4rem 1rem;
+}
+
+/*  */
+/*  */
+/*  */
+/*  */
+/* Dashboard header */
+/*  */
+/*  */
+/*  */
+/*  */
+
+/* .dashboard_header{
+    display: flex;
+    justify-content: space-around;
+} */
