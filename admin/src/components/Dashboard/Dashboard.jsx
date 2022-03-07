@@ -109,7 +109,7 @@ export const DashboardHeader = () => {
                     </div>
                 </div>
             </div>
-            <div className='bg-[#081D60] text-white h-screen py-8'>
+            <div className='bg-[#081D60] text-white h-full py-8'>
                 <div className='md:container mx-auto px-2 flex gap-x-24 py-6 '>
                     <Outlet />
                 </div>

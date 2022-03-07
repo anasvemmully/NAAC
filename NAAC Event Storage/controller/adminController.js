@@ -183,10 +183,10 @@ const AdminGetDashboardActiveTemplate = (req, res, next) => {
 }
 const AdminPostData = (req, res, next) => {
     Template.findOne({
-        _id: req.body.layout.templateID
+        _id: req.body.templateID
     }).then((template) => {
         if (template !== null) {
-            template.layout = req.body.layout.data;
+            template.layout = req.body.data;
             template.save().then((template) => {
                 res.status(200).send({
                     message: "Template Updated"

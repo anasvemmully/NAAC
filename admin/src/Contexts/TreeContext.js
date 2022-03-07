@@ -5,10 +5,12 @@ import axios from "axios";
 export const TreeContext = createContext();
 export const TreeContextProvider = (props)=>{
     const [treeData , setTreeData] = useState([]);
+    const [templateID , settemplateID] = useState(null);
     useEffect(()=>{
         axios.get("/api/dashboard/create")
         .then(res=>{
-            setTreeData(res.data);
+            setTreeData(res.data.data);
+            settemplateID(res.data.templateID);
         })
         .catch(err=>{
             console.log(err);
@@ -16,7 +18,7 @@ export const TreeContextProvider = (props)=>{
     },[]);
     
     return(
-        <TreeContext.Provider value={{treeData,setTreeData}}>
+        <TreeContext.Provider value={{treeData,setTreeData,templateID}}>
             {props.children}
         </TreeContext.Provider>
     );

@@ -5,7 +5,7 @@ import axios from "axios";
 
 
 const TreeUpload = ()=>{
-  const {treeData,setTreeData} = useContext(TreeContext);
+  const {treeData,setTreeData,templateID } = useContext(TreeContext);
   return(
     <div className='flex space-x-4 mt-8'>
             <div>
@@ -22,7 +22,8 @@ const TreeUpload = ()=>{
             <div>
                 <button className='font-semibold rounded-md bg-red-500 text-white px-3 py-2' onClick={()=>{
                   axios.post("/api/data",{
-                    layout : treeData
+                    data : treeData,
+                    templateID : templateID
                   });        
                   // console.log(ref.current);
                 }}>Upload</button>
@@ -88,10 +89,10 @@ const App = (props)=>{
   const [settree , settreeSet] = useState(true);
   return(
     <>
-      <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' onClick={()=>{
+      <button className='bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded' onClick={()=>{
         settreeSet(!settree);
       }}>Toggle Tree View</button>
-      {treeData.length && treeData.map((item,index)=>{
+      { treeData.map((item,index)=>{
         return(
           <Node key={index} {...item} settree={settree} index={index}/>
         )
@@ -103,7 +104,7 @@ const App = (props)=>{
 export const Tree = (props) => {
     return (
         <TreeContextProvider>
-            <div className='m-8'>
+            <div className=''>
                 <App/>
                 <TreeUpload/>
             </div>
