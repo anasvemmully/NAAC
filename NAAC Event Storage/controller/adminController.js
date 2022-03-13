@@ -155,12 +155,16 @@ const AdminGetDashboardActiveTemplate = (req, res, next) => {
                     isActive: true
                 })
                 .then((template) => {
-                    console.log(template.layout)
-
-                    res.status(200).send({
-                        data: template.layout,
-                        templateID: template._id
-                    });
+                    console.log(template)
+                    data = {
+                        id : template._id,
+                        islive : template.islive,
+                        isActive : template.isActive,
+                        name : template.name,
+                        layout : template.layout,
+                        handle: template.handle
+                    }
+                    res.status(200).send({data});
                 });
         } else {
             User.findById(req.user._id).then((user) => {
@@ -171,10 +175,15 @@ const AdminGetDashboardActiveTemplate = (req, res, next) => {
                 // console.log(user);
                 user.save((err, user) => {
                     template.save().then((template) => {
-                        res.status(200).send({
-                            data: template.layout,
-                            templateID: template._id
-                        });
+                        data = {
+                            id : template._id,
+                            islive : template.islive,
+                            isActive : template.isActive,
+                            name : template.name,
+                            layout : template.layout,
+                            handle: template.handle
+                        }
+                        res.status(200).send({data});
                     });
                 });
             });
@@ -187,6 +196,7 @@ const AdminPostData = (req, res, next) => {
     }).then((template) => {
         if (template !== null) {
             template.layout = req.body.data;
+            template.name = req.body.name;
             template.save().then((template) => {
                 res.status(200).send({
                     message: "Template Updated"

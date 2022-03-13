@@ -14,7 +14,6 @@ export const Dashboard = () => {
         axios.get('/api/dashboard').then(res => {
             if (res.data.isAuthenticated) Signout();
             else {
-                console.log(res.data);
                 setTemplates(res.data.template);
                 setActiveTemplate(res.data.activeTemplate);
             }
@@ -23,7 +22,7 @@ export const Dashboard = () => {
         });
     }, [Signout]);
     return (
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-6 gap-4'>
             {templates && templates.map((e, index) => (
                 <div className="bg-slate-50 p-4 rounded group" onClick={(e) => console.log(e)}>
                     <Link to={`/admin/dashboard/view/${e.id}`} className="group-hover:border-blue-500 group-hover:border-solid px-10 py-6 flex flex-col items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-base ">
@@ -83,9 +82,9 @@ export const View = () => {
 export const DashboardHeader = () => {
     const { user, Signout } = useContext(AuthContext);
     return (
-        <div className='font-sans'>
-            <div className='border-b-2 border-gray-300 py-6'>
-                <div className='md:container mx-auto px-2 flex gap-x-12 justify-between'>
+        <div className='font-sans bg-[#081D60]'>
+            <div className='bg-white border-b-2 border-gray-300 py-6'>
+                <div className='px-12 flex justify-between'>
                     <div className='flex gap-x-12'>
                         <NavLink to="/admin/dashboard/" className={({ isActive }) => isActive ? "font-bold underline underline-offset-8" : "font-normal hover:underline hover:underline-offset-8"} >
                             <div>
@@ -109,14 +108,15 @@ export const DashboardHeader = () => {
                     </div>
                 </div>
             </div>
-            <div className='bg-[#081D60] text-white h-full py-8'>
-                <div className='md:container mx-auto px-2 flex gap-x-24 py-6 '>
-                    <Outlet />
-                </div>
+            <div className='px-12 py-8'>
+                <Outlet />
             </div>
         </div>
     );
 }
 
+                // <div className='md:container mx-auto px-2 flex gap-x-24 py-6 '>
+                //     <Outlet />
+                // </div>
 
 // bg-[#081D60]

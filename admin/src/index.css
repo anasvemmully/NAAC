@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
 .form-center{
     position:absolute;
     left:50%;

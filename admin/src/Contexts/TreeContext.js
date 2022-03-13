@@ -6,11 +6,14 @@ export const TreeContext = createContext();
 export const TreeContextProvider = (props)=>{
     const [treeData , setTreeData] = useState([]);
     const [templateID , settemplateID] = useState(null);
+    const [templateName , settemplateName] = useState("");
     useEffect(()=>{
         axios.get("/api/dashboard/create")
         .then(res=>{
-            setTreeData(res.data.data);
-            settemplateID(res.data.templateID);
+            console.log(res.data.data);
+            settemplateName(res.data.data.name);
+            setTreeData(res.data.data.layout);
+            settemplateID(res.data.data.id);   
         })
         .catch(err=>{
             console.log(err);
@@ -18,7 +21,7 @@ export const TreeContextProvider = (props)=>{
     },[]);
     
     return(
-        <TreeContext.Provider value={{treeData,setTreeData,templateID}}>
+        <TreeContext.Provider value={{settemplateName,templateName, treeData,setTreeData,templateID}}>
             {props.children}
         </TreeContext.Provider>
     );
