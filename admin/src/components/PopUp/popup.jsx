@@ -1,6 +1,18 @@
+/* eslint-disable jsx-a11y/alt-text */
 import React, { useEffect, useState, useContext } from "react";
 import { TreeContext } from "../../Contexts/TreeContext";
 import "flowbite";
+
+
+
+
+
+
+// TODO : data type integration
+// TODO : pop up  width and height fixing
+// TODO : publishing form
+// TODO : changes pending for uploading status
+// TODO : succesfuly uplooaded status
 
 const Popup = (props) => {
   const { popup, data, setPopup, smartDelete } = props;
@@ -13,13 +25,28 @@ const Popup = (props) => {
     level: "",
     index: "",
   });
-  // const { index, title, type, parent, level } = data;
+
+  const  [ DataType , setDataType ] = useState({
+    image : false,
+    excel : false,
+    pdf : false,
+    text : false,
+    web : false 
+  });
 
   useEffect(() => {
     setData(data);
+    setDataType();
   }, [data]);
 
-  console.log("running popUp");
+  var help = {
+    get isChildrenAvailable() {
+      if (treeData.length === Data.index + 1) return false;
+      else if (treeData[Data.index + 1].level === Data.level + 1) return true;
+      else return false;
+    },
+
+  };
 
   return (
     <div className="fixed z-50 right-0 top-0 bottom-0 backdrop-grayscale backdrop-blur-sm h-full w-full flex items-center justify-center">
@@ -85,22 +112,143 @@ const Popup = (props) => {
 
               <label
                 htmlFor="toggle-section"
-                className="flex relative items-center mb-4 cursor-pointer"
+                className={
+                  "flex relative items-center mb-2 " +
+                  (help.isChildrenAvailable === true
+                    ? "cursor-not-allowed"
+                    : "cursor-pointer")
+                }
               >
-                <input type="checkbox" checked={Data.type === "section" ? "checked" : ""} id="toggle-section" className="sr-only" onChange={(e)=>{
-                  setData({ ...Data, type: e.target.checked ? "section" : "item" });
-                }}/>
+                <input
+                  type="checkbox"
+                  disabled={help.isChildrenAvailable === true ? "disabled" : ""}
+                  checked={Data.type === "section" ? "checked" : ""}
+                  id="toggle-section"
+                  className="sr-only"
+                  onChange={(e) => {
+                    setData({
+                      ...Data,
+                      type: e.target.checked ? "section" : "item",
+                    });
+                  }}
+                />
                 <div className="w-11 h-6 bg-gray-200 rounded-full border border-gray-200 toggle-bg dark:bg-gray-700 dark:border-gray-600"></div>
                 <span className="ml-3 text-sm font-medium text-white dark:text-gray-300">
                   Is this a Section ?
                 </span>
               </label>
+              {help.isChildrenAvailable === true ? (
+                <p className="text-red-400 font-bold text-sm">
+                  <svg
+                    className="mr-1 w-5 h-5 inline-block text-red-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                  There are already items in this section !
+                </p>
+              ) : (
+                ""
+              )}
+
+              {Data.type !== "section" ? (
+                <div className="flex flex-col">
+                  <p className="text-white font-bold text-xs pb-2 w-full">
+                    Choose Type :
+                  </p>
+                  <div className="grid grid-cols-3">
+                    <div className="items-center mb-4  ">
+                      <input
+                        id="checkbox-image"
+                        aria-describedby="checkbox-image"
+                        type="checkbox"
+                        className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                      />
+                      <label
+                        htmlFor="checkbox-image"
+                        className="ml-3 text-xs cursor-pointer"
+                      >
+                        IMAGE
+                      </label>
+                    </div>
+                    <div className="flex items-center mb-4  ">
+                      <input
+                        id="checkbox-excel"
+                        aria-describedby="checkbox-excel"
+                        type="checkbox"
+                        className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                      />
+                      <label
+                        htmlFor="checkbox-excel"
+                        className="ml-3 text-xs cursor-pointer"
+                      >
+                        EXCEL
+                      </label>
+                    </div>
+                    <div className="flex items-center mb-4  ">
+                      <input
+                        id="checkbox-pdf"
+                        aria-describedby="checkbox-pdf"
+                        type="checkbox"
+                        className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                      />
+                      <label
+                        htmlFor="checkbox-pdf"
+                        className="ml-3 text-xs cursor-pointer"
+                      >
+                        PDF
+                      </label>
+                    </div>
+                    <div className="flex items-center mb-4 ">
+                      <input
+                        id="checkbox-text"
+                        aria-describedby="checkbox-text"
+                        type="checkbox"
+                        className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                      />
+                      <label
+                        htmlFor="checkbox-text"
+                        className="ml-3 text-xs cursor-pointer"
+                      >
+                        TEXT
+                      </label>
+                    </div>
+                    <div className="flex items-center mb-4 ">
+                      <input
+                        id="checkbox-web"
+                        aria-describedby="checkbox-web"
+                        type="checkbox"
+                        className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                      />
+                      <label
+                        htmlFor="checkbox-web"
+                        className="ml-3 text-xs cursor-pointer"
+                      >
+                        WEB
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                ""
+              )}
             </div>
-            <div className="flex items-center p-6 space-x-2 rounded-b border-t border-white-300 ">
+            <div className="flex items-center p-6 pb-3 space-x-2 rounded-b border-t border-white-300 ">
               <button
                 type="button"
                 onClick={() => {
-                  treeData[Data.index] = Data;
+                  treeData[Data.index] = {
+                    title: Data.title,
+                    type: Data.type,
+                    parent: Data.parent,
+                    level: Data.level,
+                  };
                   setTreeData([...treeData]);
                   setPopup(false);
                   setData({
@@ -108,21 +256,41 @@ const Popup = (props) => {
                     type: "",
                     parent: "",
                     level: "",
-                    index: "",
                   });
                 }}
                 className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
               >
-                Save
+                OK
               </button>
               <button
                 type="button"
-                onClick={smartDelete}
+                onClick={() => {
+                  smartDelete();
+                  setPopup(false);
+                }}
                 className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:ring-gray-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600"
               >
                 Delete
               </button>
             </div>
+            {help.isChildrenAvailable === true ? (
+              <p className="p-6 pt-3 text-red-400 font-bold text-sm">
+                <svg
+                  className="mr-1 w-5 h-5 inline-block text-red-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clip-rule="evenodd"
+                  ></path>
+                </svg>
+                Deleting this item will also delete all its children.
+              </p>
+            ) : (
+              ""
+            )}
           </div>
         </div>
       </div>
@@ -131,3 +299,32 @@ const Popup = (props) => {
 };
 
 export default Popup;
+
+// eslint-disable-next-line no-lone-blocks
+{
+  /* <div className="flex mb-4">
+                    <div className="flex items-center h-5">
+                      <input
+                        id="shipping-2"
+                        aria-describedby="shipping-2"
+                        type="checkbox"
+                        className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                      />
+                    </div>
+                    <div className="ml-3 text-sm">
+                      <label
+                        for="shipping-2"
+                        className="font-medium text-gray-900 dark:text-gray-300"
+                      >
+                        Free shipping via Flowbite
+                      </label>
+                      <div className="text-gray-500 dark:text-gray-300">
+                        <span className="text-xs font-normal">
+                          For orders shipped from Flowbite from{" "}
+                          <span className="font-medium">€ 25</span> in books or{" "}
+                          <span>€ 29</span> on other categories
+                        </span>
+                      </div>
+                    </div>
+                  </div> */
+}
