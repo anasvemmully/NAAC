@@ -7,13 +7,27 @@ export const TreeContextProvider = (props)=>{
     const [treeData , setTreeData] = useState([]);
     const [templateID , settemplateID] = useState(null);
     const [templateName , settemplateName] = useState("");
+ 
+    const [UPDATE , setUPDATE] = useState(false);
+
+
+    const SET_TREE_DATA = (e)=>{
+        if (UPDATE === true) {
+            setTreeData(e);
+        }
+        else if(UPDATE === false || UPDATE === undefined){
+            setTreeData(e);
+            setUPDATE(true);
+        }
+    }
+    
     useEffect(()=>{
         axios.get("/api/dashboard/create")
         .then(res=>{
             console.log(res.data.data);
             settemplateName(res.data.data.name);
             setTreeData(res.data.data.layout);
-            settemplateID(res.data.data.id);   
+            settemplateID(res.data.data.id);
         })
         .catch(err=>{
             console.log(err);
@@ -21,7 +35,7 @@ export const TreeContextProvider = (props)=>{
     },[]);
     
     return(
-        <TreeContext.Provider value={{settemplateName,templateName, treeData,setTreeData,templateID}}>
+        <TreeContext.Provider value={{ UPDATE , setUPDATE , SET_TREE_DATA , settemplateName , templateName , treeData , setTreeData , templateID }}>
             {props.children}
         </TreeContext.Provider>
     );

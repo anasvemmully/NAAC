@@ -1,52 +1,57 @@
 /* eslint-disable jsx-a11y/alt-text */
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext , useCallback } from "react";
 import { TreeContext } from "../../Contexts/TreeContext";
 import "flowbite";
 
-
-
-
-
-
-// TODO : data type integration
 // TODO : pop up  width and height fixing
 // TODO : publishing form
 // TODO : changes pending for uploading status
 // TODO : succesfuly uplooaded status
 
 const Popup = (props) => {
-  const { popup, data, setPopup, smartDelete } = props;
+  const { popup , data , setPopup , smartDelete } = props;
 
-  const { treeData, setTreeData } = useContext(TreeContext);
+  const { treeData, SET_TREE_DATA } = useContext(TreeContext);
   const [Data, setData] = useState({
     title: "",
     type: "",
     parent: "",
     level: "",
     index: "",
+    data : null
   });
 
-  const  [ DataType , setDataType ] = useState({
-    image : false,
-    excel : false,
-    pdf : false,
-    text : false,
-    web : false 
-  });
+  const checkBoxHandler = useCallback((e) => {
+    const { name, checked } = e.target;
+
+    setData({
+      ...Data,
+      data: {
+        ...Data.data,
+        [name]: checked,
+      },
+    });
+  },[Data]);
 
   useEffect(() => {
     setData(data);
-    setDataType();
   }, [data]);
 
-  var help = {
+  const isDataAvailable = (name)=>{
+    if(Data.data === null ) return false;
+    else if (Data.data?.[name] === undefined) return false;
+    else return Data.data?.[name];
+  }
+
+  const help = {
     get isChildrenAvailable() {
-      if (treeData.length === Data.index + 1) return false;
+      if (treeData.length === 1) return false; 
+      else if (treeData.length === Data.index + 1) return false;
       else if (treeData[Data.index + 1].level === Data.level + 1) return true;
       else return false;
-    },
-
+    }
   };
+  // console.log(Data);
 
   return (
     <div className="fixed z-50 right-0 top-0 bottom-0 backdrop-grayscale backdrop-blur-sm h-full w-full flex items-center justify-center">
@@ -129,6 +134,7 @@ const Popup = (props) => {
                     setData({
                       ...Data,
                       type: e.target.checked ? "section" : "item",
+                      // data  : e.target.checked ? null : Data.data,
                     });
                   }}
                 />
@@ -146,9 +152,9 @@ const Popup = (props) => {
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      fill-rule="evenodd"
+                      fillRule="evenodd"
                       d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clip-rule="evenodd"
+                      clipRule="evenodd"
                     ></path>
                   </svg>
                   There are already items in this section !
@@ -157,17 +163,20 @@ const Popup = (props) => {
                 ""
               )}
 
-              {Data.type !== "section" ? (
+              {Data.type === "item" ? (
                 <div className="flex flex-col">
                   <p className="text-white font-bold text-xs pb-2 w-full">
                     Choose Type :
                   </p>
-                  <div className="grid grid-cols-3">
+                  <div className="grid grid-cols-3 gap-x-3">
                     <div className="items-center mb-4  ">
                       <input
                         id="checkbox-image"
                         aria-describedby="checkbox-image"
                         type="checkbox"
+                        name="image"
+                        checked={isDataAvailable('image') ? "checked" : ""}
+                        onChange={checkBoxHandler}
                         className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />
                       <label
@@ -182,6 +191,9 @@ const Popup = (props) => {
                         id="checkbox-excel"
                         aria-describedby="checkbox-excel"
                         type="checkbox"
+                        name="excel"
+                        checked={isDataAvailable('excel') ? "checked" : ""}
+                        onChange={checkBoxHandler}
                         className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />
                       <label
@@ -196,6 +208,9 @@ const Popup = (props) => {
                         id="checkbox-pdf"
                         aria-describedby="checkbox-pdf"
                         type="checkbox"
+                        name="pdf"
+                        checked={isDataAvailable('pdf') ? "checked" : ""}
+                        onChange={checkBoxHandler}
                         className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />
                       <label
@@ -210,6 +225,9 @@ const Popup = (props) => {
                         id="checkbox-text"
                         aria-describedby="checkbox-text"
                         type="checkbox"
+                        name="text"
+                        checked={isDataAvailable('text') ? "checked" : ""}
+                        onChange={checkBoxHandler}
                         className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />
                       <label
@@ -224,6 +242,9 @@ const Popup = (props) => {
                         id="checkbox-web"
                         aria-describedby="checkbox-web"
                         type="checkbox"
+                        name="web"
+                        checked={isDataAvailable('web') ? "checked" : ""}
+                        onChange={checkBoxHandler}
                         className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />
                       <label
@@ -248,15 +269,16 @@ const Popup = (props) => {
                     type: Data.type,
                     parent: Data.parent,
                     level: Data.level,
+                    data: Data.type === "section" ? null : Data.data,
                   };
-                  setTreeData([...treeData]);
+                  SET_TREE_DATA([...treeData]);
                   setPopup(false);
-                  setData({
-                    title: "",
-                    type: "",
-                    parent: "",
-                    level: "",
-                  });
+                  // setData({
+                  //   title: "",
+                  //   type: "",
+                  //   parent: "",
+                  //   level: "",
+                  // });
                 }}
                 className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
               >
@@ -281,9 +303,9 @@ const Popup = (props) => {
                   viewBox="0 0 20 20"
                 >
                   <path
-                    fill-rule="evenodd"
+                    fillRule="evenodd"
                     d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clip-rule="evenodd"
+                    clipRule="evenodd"
                   ></path>
                 </svg>
                 Deleting this item will also delete all its children.
@@ -299,32 +321,3 @@ const Popup = (props) => {
 };
 
 export default Popup;
-
-// eslint-disable-next-line no-lone-blocks
-{
-  /* <div className="flex mb-4">
-                    <div className="flex items-center h-5">
-                      <input
-                        id="shipping-2"
-                        aria-describedby="shipping-2"
-                        type="checkbox"
-                        className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                      />
-                    </div>
-                    <div className="ml-3 text-sm">
-                      <label
-                        for="shipping-2"
-                        className="font-medium text-gray-900 dark:text-gray-300"
-                      >
-                        Free shipping via Flowbite
-                      </label>
-                      <div className="text-gray-500 dark:text-gray-300">
-                        <span className="text-xs font-normal">
-                          For orders shipped from Flowbite from{" "}
-                          <span className="font-medium">€ 25</span> in books or{" "}
-                          <span>€ 29</span> on other categories
-                        </span>
-                      </div>
-                    </div>
-                  </div> */
-}
