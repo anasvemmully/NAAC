@@ -1,4 +1,5 @@
 function AuthenticateAdmin(req,res,next){
+    console.log("Authenticaation Middleware working fine");
     if(req.isAuthenticated() && req.user.role === "ADMIN"){
         next();
     }

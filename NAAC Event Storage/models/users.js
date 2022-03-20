@@ -37,12 +37,13 @@ const UserSchema = new Schema({
             type: mongoose.Types.ObjectId,
             ref : 'Template'
         }
-    ]
-    // ,
-    // meta : {
-    //     type : mongoose.Types.ObjectId ,
-    //     ref : 'Meta'
-    // }
+    ],
+    members : [
+        {
+            type: mongoose.Types.ObjectId,
+            ref : 'Member'
+        }
+    ],
 },{
     timestamps : true
 });

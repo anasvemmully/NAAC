@@ -2,15 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 //create user model
-const MetaSchema = new Schema({
-    _id : {
+const MemberSchema = new Schema({
+    ParentId : {
         type : mongoose.Types.ObjectId,
         ref : 'User'
     },
-    // currentTemplate : {
-    //     type : mongoose.Types.ObjectId,
-    //     ref : "Template"
-    // },
     template : [
         {
             type: mongoose.Types.ObjectId,
@@ -21,6 +17,6 @@ const MetaSchema = new Schema({
 });
 
 //register user model with mongoose and export default
-const Meta = mongoose.model('Meta', MetaSchema);
+const Member = mongoose.model('Member', MemberSchema);
 
-module.exports = Meta;
+module.exports = Member;

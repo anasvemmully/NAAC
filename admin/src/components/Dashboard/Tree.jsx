@@ -2,8 +2,16 @@ import React, { useContext, useState } from "react";
 import { TreeContextProvider, TreeContext } from "../../Contexts/TreeContext";
 import axios from "axios";
 
+import { toast, Slide } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useParams } from "react-router-dom";
+
+import { animateScroll as scroll } from "react-scroll";
+
 import Popup from "../PopUp/popup.jsx";
-// import  {useNavigate} from 'react-router-dom';
+import  {useNavigate} from 'react-router-dom';
+
+toast.configure();
 
 const Node = ({ index, title, type, parent, level, settree, data }) => {
   const { treeData, SET_TREE_DATA } = useContext(TreeContext);
@@ -12,6 +20,7 @@ const Node = ({ index, title, type, parent, level, settree, data }) => {
   const style = {
     paddingLeft: `${level * 3}rem`,
   };
+
   const addChild = () => {
     var i = index + 1;
     for (i; i < treeData.length; i++) {
@@ -49,11 +58,11 @@ const Node = ({ index, title, type, parent, level, settree, data }) => {
   };
 
   return (
-    <div className="container my-4" style={settree ? style : {}}>
+    <div className="flex my-2" style={settree ? style : {}}>
       <div className="flex space-x-4">
         <input
           disabled
-          className="placeholder:italic placeholder:text-gray-400 bg-white border border-gray-300 rounded-sm py-2 px-3 w-2/5 focus:outline-none focus:border-sky-500 focus:ring-sky-500 focus:ring-1 sm:text-sm"
+          className="placeholder:italic placeholder:text-gray-400 bg-white border border-gray-300 rounded-sm py-2 px-3 w-96 focus:outline-none focus:border-sky-500 focus:ring-sky-500 focus:ring-1 sm:text-sm"
           value={treeData[index].title}
         />
 
@@ -99,63 +108,13 @@ const Node = ({ index, title, type, parent, level, settree, data }) => {
     </div>
   );
 };
-// Node Older version
-// eslint-disable-next-line no-lone-blocks
-{
-  /* <div className='container my-4' style={settree?style:{}}>
-          <div className='flex space-x-4'>
-            <input className='placeholder:italic placeholder:text-gray-400 bg-white border border-gray-300 rounded-sm py-2 px-3 w-2/5 focus:outline-none focus:border-sky-500 focus:ring-sky-500 focus:ring-1 sm:text-sm' value={treeData[index].title} onChange={(e)=>{
-              treeData[index].title = e.target.value;
-              SET_TREE_DATA([...treeData])
-              }}/>
-              {type==='section'?(<button onClick={addChild}>
-                <svg className='h-6 w-6 text-blue-500' fill='currentColor' viewBox='0 0 20 20'><path fillRule='evenodd' d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z' clipRule='evenodd'></path></svg>
-              </button>):""}
-              <button onClick={smartDelete}><svg className='h-6 w-6 text-red-500' fill='currentColor' viewBox='0 0 20 20'><path fillRule='evenodd' d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z' clipRule='evenodd'></path></svg>
-              </button>
-          </div>            
-        </div> */
-}
 
 const App = (props) => {
-  const { UPDATE , treeData , templateName , settemplateName } =
-    useContext(TreeContext);
+  const { treeData, templateName, settemplateName } = useContext(TreeContext);
   const [settree, settreeSet] = useState(true);
-
-  console.log(UPDATE);
 
   return (
     <>
-      {UPDATE && (
-        <div
-          id="alert-additional-content-4"
-          class="p-4 mb-4 bg-yellow-100 rounded-lg dark:bg-yellow-200"
-          role="alert"
-        >
-          <div class="flex items-center">
-            <svg
-              class="mr-2 w-5 h-5 text-yellow-700 dark:text-yellow-800"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-            <h3 class="text-lg font-medium text-yellow-700 dark:text-yellow-800">
-              Unsaved Changes
-            </h3>
-          </div>
-          <div class="mt-2 mb-4 pl-7 text-sm text-yellow-700 dark:text-yellow-800">
-            You are seeing this message because you have unsaved changes, 
-            please save your changes before leaving this page. 
-          </div>
-        </div>
-      )}
-
-
       <button
         className="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded"
         onClick={() => {
@@ -178,15 +137,35 @@ const App = (props) => {
   );
 };
 
-const TreeUpload = () => {
-  const { setUPDATE , treeData , SET_TREE_DATA , templateID , templateName } =
+const TreeUpload = ({ scrollMeDown }) => {
+  const { setUPDATE, treeData, SET_TREE_DATA, templateID, templateName } =
     useContext(TreeContext);
+
+  const toastId = React.useRef(null);
+  const navigate = useNavigate();
+
+  const notify = () => {
+    if (!toast.isActive(toastId.current)) {
+      toastId.current = toast.success("Uploaded Successfully", {
+        position: "top-right",
+        transition: Slide,
+        autoClose: 800,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+  };
+
   return (
     <div className="flex space-x-4 mt-8">
       <div>
         <button
           className="font-semibold rounded-md bg-red-500 text-white px-3 py-2"
           onClick={() => {
+            scroll.scrollToBottom();
             SET_TREE_DATA([
               ...treeData,
               {
@@ -212,6 +191,9 @@ const TreeUpload = () => {
               templateID: templateID,
             });
             setUPDATE(false);
+
+            notify();
+
             console.log(
               `%c${templateName}\n\n${JSON.stringify(
                 treeData,
@@ -225,6 +207,82 @@ const TreeUpload = () => {
           Upload
         </button>
       </div>
+      <div>
+        <button
+          className="font-semibold rounded-md bg-blue-500 text-white px-3 py-2"
+          onClick={() => {
+            scroll.scrollToTop();
+            axios
+              .post(`/api/dashboard/create/${templateID}`, {})
+              .then((res) => {
+                navigate("/admin/dashboard");
+              });
+          }}
+        >
+          Publish
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const Wrapper = () => {
+  const { TemplateId } = useParams();
+  const { UPDATE, settemplateName, setTreeData, settemplateID } =
+    useContext(TreeContext);
+
+  React.useEffect(() => {
+    axios
+      .get(`/api/dashboard/create/${TemplateId}`)
+      .then((res) => {
+        settemplateName(res.data.data.name);
+        setTreeData(res.data.data.layout);
+        settemplateID(res.data.data.id);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [setTreeData, settemplateName, TemplateId, settemplateID]);
+
+  return (
+    <div className="flex flex-row gap-x-8">
+      <div className="basis-8/12 border-r-2 border-white">
+        <App />
+        {/* <input type="hidden" value="scrollme" /> */}
+      </div>
+      <div className="basis-4/12">
+        <div className="sticky top-8">
+          <TreeUpload />
+          {UPDATE && (
+            <div
+              id="alert-additional-content-4"
+              className="p-4 mb-4 bg-yellow-100 rounded-lg dark:bg-yellow-200 my-4"
+              role="alert"
+            >
+              <div className="flex items-center">
+                <svg
+                  className="mr-2 w-5 h-5 text-yellow-700 dark:text-yellow-800"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+                <h3 className="text-lg font-medium text-yellow-700 dark:text-yellow-800">
+                  Unsaved Changes
+                </h3>
+              </div>
+              <div className="mt-2 mb-4 pl-7 text-sm text-yellow-700 dark:text-yellow-800">
+                You are seeing this message because you have unsaved changes,
+                please save your changes before leaving this page.
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -232,10 +290,7 @@ const TreeUpload = () => {
 export const Tree = (props) => {
   return (
     <TreeContextProvider>
-      <div className="">
-        <App />
-        <TreeUpload />
-      </div>
+      <Wrapper />
     </TreeContextProvider>
   );
 };

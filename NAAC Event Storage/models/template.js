@@ -7,6 +7,10 @@ const TemplateSchema = new Schema({
         type : Boolean,
         default : false,
     },
+    isComplete : {
+        type : Boolean,
+        default : false,
+    },
     isActive : {
         type : Boolean,
         default : true,
@@ -20,21 +24,8 @@ const TemplateSchema = new Schema({
     layout : [],
     handle : [
         {
-            section : {
-                name : {
-                    minLength : 2,
-                    type : String
-                },
-                users : [
-                    {
-                        type : mongoose.Types.ObjectId,
-                        ref : 'User'
-                    }
-                ]
-            },
-            level : {
-                type : Number,
-            },
+            publish : [],
+            role : {}
         }
     ]
 },{

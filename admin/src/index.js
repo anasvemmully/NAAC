@@ -40,7 +40,7 @@ render(
           }>
             <Route index element={<Dashboard />} />
             <Route path="manage/" element={<Manage />} />
-            <Route path="create/" element={<Create />} />
+            <Route path="create/:TemplateId" element={<Create />} />
             <Route path="view/:ViewId" element={<View />} />
           </Route>
           <Route path="/form/:FormId" element={<div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',fontSize:'4rem'}}><b>Client</b></div>} />

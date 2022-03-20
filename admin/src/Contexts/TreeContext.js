@@ -1,5 +1,5 @@
 import React , { createContext , useEffect ,useState} from "react";
-import axios from "axios";
+// import axios from "axios";
 
 
 export const TreeContext = createContext();
@@ -21,21 +21,29 @@ export const TreeContextProvider = (props)=>{
         }
     }
     
-    useEffect(()=>{
-        axios.get("/api/dashboard/create")
-        .then(res=>{
-            console.log(res.data.data);
-            settemplateName(res.data.data.name);
-            setTreeData(res.data.data.layout);
-            settemplateID(res.data.data.id);
-        })
-        .catch(err=>{
-            console.log(err);
-       })     
-    },[]);
+
+    //UNDER DISCUSSION
+    //UNDER DISCUSSION
+    //UNDER DISCUSSION
+    //UNDER DISCUSSION
+    //UNDER DISCUSSION
+    //UNDER DISCUSSION
+    //UNDER DISCUSSION
+    // useEffect(()=>{
+    //     axios.get("/api/dashboard/create")
+    //     .then(res=>{
+    //         console.log(res.data.data);
+    //         // settemplateName(res.data.data.name);
+    //         // setTreeData(res.data.data.layout);
+    //         // settemplateID(res.data.data.id);
+    //     })
+    //     .catch(err=>{
+    //         console.log(err);
+    //    })     
+    // },[]);
     
     return(
-        <TreeContext.Provider value={{ UPDATE , setUPDATE , SET_TREE_DATA , settemplateName , templateName , treeData , setTreeData , templateID }}>
+        <TreeContext.Provider value={{ UPDATE , setUPDATE , SET_TREE_DATA , settemplateID , settemplateName , templateName , treeData , setTreeData , templateID }}>
             {props.children}
         </TreeContext.Provider>
     );
