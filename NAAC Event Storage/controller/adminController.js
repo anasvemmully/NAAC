@@ -260,17 +260,42 @@ const AdminPostDashboardActiveTemplate = async (req, res, next) => {
 };
 
 const AdminGetUser = async (req, res, next) => {
-  if (req.user.members.length === 0) {
+  // if (req.user.members.length === 0) {
+  //   res.status(200).send({
+  //     message: "Users Found",
+  //     user: req.user.member,
+  //   });
+  // } else {
+    
+  // }
+  await Member.find({}).then((members) => {
+    console.log("members");
     res.status(200).send({
       message: "Users Found",
-      user: req.user,
+      user: members,
     });
-  } else {
-  }
+  });
 };
 
-const AdminPostUser = async (req, res, next) => {}
-
+const AdminPostUser = async (req, res, next) => {
+  console.log(req.body.userAdd);
+  const member = new Member({
+    email: req.body.userAdd,
+    ParentId: req.user._id,
+  });
+  await member
+    .save()
+    .then((member) => {
+      res.status(200).send({
+        success : true
+      });
+    })
+    .catch((err) => {
+      res.status(200).send({
+        success : false
+      });
+    });
+};
 
 module.exports = {
   AdminRegisterGet,
