@@ -239,6 +239,26 @@ const AdminPostDashboardActiveTemplate = async (req, res, next) => {
           if (template !== null) {
             template.islive = true;
             template.isActive = false;
+            dict = {};
+            template.layout.map((e, index) => {
+              if (e.type === "item") {
+                for (i in e.data) {
+                  if (e.data[i] === true) {
+                    if (dict[index]) {
+                      dict[index][i] = {};
+                    } else {
+                      dict[index] = {
+                        [i]: {},
+                      };
+                    }
+                  }
+                }
+              }
+            });
+
+            template.handle.publish = dict;
+            template.handle.role = {};
+
             template.save().then((template) => {
               res.status(200).send({
                 message: "Template Updated",
@@ -247,6 +267,7 @@ const AdminPostDashboardActiveTemplate = async (req, res, next) => {
           }
         })
         .catch((err) => {
+          console.log(err);
           res.status(500).send({
             message: "Internal Server Error",
           });
@@ -260,14 +281,6 @@ const AdminPostDashboardActiveTemplate = async (req, res, next) => {
 };
 
 const AdminGetUser = async (req, res, next) => {
-  // if (req.user.members.length === 0) {
-  //   res.status(200).send({
-  //     message: "Users Found",
-  //     user: req.user.member,
-  //   });
-  // } else {
-    
-  // }
   await Member.find({}).then((members) => {
     console.log("members");
     res.status(200).send({
@@ -287,14 +300,60 @@ const AdminPostUser = async (req, res, next) => {
     .save()
     .then((member) => {
       res.status(200).send({
-        success : true
+        success: true,
       });
     })
     .catch((err) => {
       res.status(200).send({
-        success : false
+        success: false,
       });
     });
+};
+
+const AdminDeleteUser = async (req, res, next) => {
+  await Member.findOneAndDelete({
+    email: req.body.email,
+  }).then((member) => {
+    res.status(200).send({
+      message: "User Deleted",
+      success: true,
+    });
+  });
+};
+
+const AdminGetDashBoardManageTemplate = async (req, res, next) => {
+  const { TemplateId } = req.params;
+
+  try {
+    await Template.exists({ _id: TemplateId }).then((exists) => {
+      if (exists) {
+        Template.findOne({
+          _id: TemplateId,
+        })
+          .then((template) => {
+            if (template !== null) {
+              res.status(200).send({
+                message: "Template Found",
+                data: {
+                  id: template._id,
+                  name: template.name,
+                  layout: template.layout,
+                },
+              });
+            }
+          })
+          .catch((err) => {
+            res.status(500).send({
+              message: "Internal Server Error",
+            });
+          });
+      } 
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: "Internal Server Error",
+    });
+  }
 };
 
 module.exports = {
@@ -307,5 +366,7 @@ module.exports = {
   AdminPostDashboardActiveTemplate,
   AdminPostData,
   AdminPostUser,
+  AdminDeleteUser,
   AdminGetUser,
+  AdminGetDashBoardManageTemplate,
 };

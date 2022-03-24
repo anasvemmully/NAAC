@@ -12,7 +12,9 @@ var {
   AdminPostDashboardActiveTemplate,
   AdminGetUser,
   AdminPostUser,
+  AdminDeleteUser,
   AdminPostData,
+  AdminGetDashBoardManageTemplate,
 } = require("../../controller/adminController");
 
 router.route("/register").get(AdminRegisterGet).post(AdminRegisterPost);
@@ -27,11 +29,16 @@ router
   .get(AdminGetDashboardActiveTemplate)
   .post(AdminPostDashboardActiveTemplate);
 
+router
+  .route("/dashboard/manage/:TemplateId")
+  .get(AdminGetDashBoardManageTemplate);
+
 router.route("/data").post(AdminPostData);
 
-router.route("/user").get(AdminGetUser).post(AdminPostUser);
-
-
-
+router
+  .route("/user")
+  .get(AdminGetUser)
+  .post(AdminPostUser)
+  .delete(AdminDeleteUser);
 
 module.exports = router;
