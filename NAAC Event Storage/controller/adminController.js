@@ -239,6 +239,7 @@ const AdminPostDashboardActiveTemplate = async (req, res, next) => {
           if (template !== null) {
             template.islive = true;
             template.isActive = false;
+
             dict = {};
             template.layout.map((e, index) => {
               if (e.type === "item") {
@@ -258,6 +259,7 @@ const AdminPostDashboardActiveTemplate = async (req, res, next) => {
 
             template.handle.publish = dict;
             template.handle.role = {};
+            template.handle.indexRole = {};
 
             template.save().then((template) => {
               res.status(200).send({
@@ -347,13 +349,113 @@ const AdminGetDashBoardManageTemplate = async (req, res, next) => {
               message: "Internal Server Error",
             });
           });
-      } 
+      }
     });
   } catch (err) {
     res.status(500).send({
       message: "Internal Server Error",
     });
   }
+};
+
+const AdminPosttDashBoardManageTemplate = async (req, res, next) => {
+  const { TemplateId } = req.params;
+  await Template.exists({ _id: TemplateId }).then((exists) => {
+    if (exists) {
+      Template.findOne({
+        _id: TemplateId,
+      })
+        .then((template) => {
+          if (template !== null) {
+            template.layout = req.body.data;
+            template.name = req.body.name;
+            template.save().then((template) => {
+              res.status(200).send({
+                message: "Template Updated",
+              });
+            });
+          }
+        })
+        .catch((err) => {
+          res.status(500).send({
+            message: "Internal Server Error",
+          });
+        });
+    } else {
+      res.status(404).send({
+        message: "Something went Wrong",
+      });
+    }
+  });
+};
+
+const AdminPostRoleUserGet = async (req, res, next) => {
+  const { id, index } = req.body;
+  await Template.findById({ _id: id }).then((template) => {
+    res.status(200).send({
+      roles: template.handle.indexRole[index],
+    });
+  });
+};
+
+const AdminPostRoleUser = async (req, res, next) => {
+  const { email, start, end, template_id } = req.body;
+  await Template.findById({ _id: template_id }).then((template) => {
+    if (Object.keys(template.handle.role).includes(email)) {
+      res.status(200).send({
+        message: "User Already Exists",
+      });
+    } else {
+      template.handle.role = {
+        ...template.handle.role,
+        [email]: [start, end],
+      };
+
+      const expand =
+        template.handle.indexRole[start] === undefined
+          ? []
+          : template.handle.indexRole[start];
+      template.handle.indexRole = {
+        ...template.handle.indexRole,
+        [start]: [...expand, email],
+      };
+
+      template.save().then((template) => {
+        res.status(200).send({
+          message: "Role Updated",
+        });
+      });
+    }
+  });
+};
+
+const AdminDeleteRoleUser = async (req, res, next) => {
+  const { email, index } = req.body;
+  await Template.findByIdAndUpdate(
+    { _id: req.body.id },
+    { isConfirmed: true, $unset: { "handle.role[email]": "" } }
+  ).then((template) => {
+    const expand =
+      template.handle.indexRole[index] === undefined
+        ? []
+        : template.handle.indexRole[index].filter((e) => e !== email);
+    template.handle.indexRole = {
+      ...template.handle.indexRole,
+      [index]: [...expand],
+    };
+    const temp = template.handle.role;
+    if (Object.keys(template.handle.role).includes(email)) {
+      delete temp[email];
+    }
+    template.handle.role = { ...temp };
+    template.markModified("handle.role");
+    template.save().then((template) => {
+      res.status(200).send({
+        message: "Role Updated",
+        success: true,
+      });
+    });
+  });
 };
 
 module.exports = {
@@ -369,4 +471,8 @@ module.exports = {
   AdminDeleteUser,
   AdminGetUser,
   AdminGetDashBoardManageTemplate,
+  AdminPosttDashBoardManageTemplate,
+  AdminPostRoleUser,
+  AdminPostRoleUserGet,
+  AdminDeleteRoleUser,
 };

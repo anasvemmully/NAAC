@@ -15,6 +15,10 @@ var {
   AdminDeleteUser,
   AdminPostData,
   AdminGetDashBoardManageTemplate,
+  AdminPosttDashBoardManageTemplate,
+  AdminPostRoleUser,
+  AdminPostRoleUserGet,
+  AdminDeleteRoleUser,
 } = require("../../controller/adminController");
 
 router.route("/register").get(AdminRegisterGet).post(AdminRegisterPost);
@@ -30,8 +34,16 @@ router
   .post(AdminPostDashboardActiveTemplate);
 
 router
+  .route("/dashboard/role")
+  .post(AdminPostRoleUser)
+  .delete(AdminDeleteRoleUser);
+
+router.route("/dashboard/get-role").post(AdminPostRoleUserGet);
+
+router
   .route("/dashboard/manage/:TemplateId")
-  .get(AdminGetDashBoardManageTemplate);
+  .get(AdminGetDashBoardManageTemplate)
+  .post(AdminPosttDashBoardManageTemplate);
 
 router.route("/data").post(AdminPostData);
 

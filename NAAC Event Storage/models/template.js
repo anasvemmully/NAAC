@@ -24,8 +24,15 @@ const TemplateSchema = new Schema(
     },
     layout: [],
     handle: {
-      publish: [],
-      role: {},
+      publish: {
+        type: Object,
+      },
+      role: {
+        type: Object,
+      },
+      indexRole: {
+        type: Object,
+      },
     },
   },
   {
