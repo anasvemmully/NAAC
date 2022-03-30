@@ -21,7 +21,7 @@ export const DashboardClient = () => {
         setSearchTemplate(res.data.template);
       } else {
         notify(res.data.message)();
-        // Signout();
+        Signout();
       }
     });
   }, [Signout, notify]);

@@ -858,7 +858,7 @@ const ClientPostUploadFile = async (req, res, next) => {
                   t.handle.publish[index][type] = {
                     path: path,
                     file_name: file_name,
-                    name : file.name,
+                    name: file.name,
                   };
                   t.markModified("handle.publish");
                   t.save().then((t) => {
@@ -891,23 +891,50 @@ const ClientGetDownloadFile = async (req, res, next) => {
     await Template.findById(templateid).then((t) => {
       if (t) {
         const file = t.handle.publish[index][type];
-        if (fs.existsSync(t.handle.publish[index][type].path)) {
-          res.sendFile(file.file_name ,{
-            headers: {
-              "Content-Disposition": `attachment; ${file.file_name}`,
+        if (fs.existsSync(file.path)) {
+          res.sendFile(
+            file.file_name,
+            {
+              headers: {
+                "Content-Disposition": `attachment; ${file.file_name}`,
+              },
+              root: "./uploads/",
             },
-            root : './uploads/'
-
-          }, (err)=>{
-            if (err) {
-              next(err)
-            } else {
-              console.log('Sent:', file.file_name)
+            (err) => {
+              if (err) {
+                next(err);
+              } else {
+                console.log("Sent:", file.file_name);
+              }
             }
-          });
+          );
         } else {
           throw new Error("File Not Found");
         }
+      } else {
+        throw new Error("Something Went Wrong !");
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const ClientPostFileInfo = async (req, res, next) => {
+  try {
+    const { templateid, index, file_type } = req.body;
+
+    await Template.findById(templateid).then((t) => {
+      if (t) {
+        const file_name = t.handle.publish[index][file_type].name;
+        res.status(200).send({
+          message: "Success",
+          success: true,
+          file: file_name ? file_name : null,
+        });
       } else {
         throw new Error("Something Went Wrong !");
       }
@@ -947,4 +974,5 @@ module.exports = {
 
   ClientPostUploadFile,
   ClientGetDownloadFile,
+  ClientPostFileInfo,
 };

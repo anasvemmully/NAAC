@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/alt-text */
 import axios from "axios";
+import fileDownload from "js-file-download";
 import React, { useEffect, useState, useContext, useCallback } from "react";
 import { ClientContext } from "../../authentication/ClientAuth";
 
@@ -107,11 +108,25 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
   const { type, index, level, parent, title } = res;
 
   const { notify, Signout } = React.useContext(ClientContext);
+  //Promise notify implemetation
 
   const [file, setFile] = useState(null);
+  const [fileInfo, setFileInfo] = useState(null);
   const [webLink, setWebLink] = useState("");
 
   const templateid = useParams().templateid;
+
+  useEffect(() => {
+    axios
+      .post("/api/d/file", {
+        templateid: templateid,
+        index: index,
+        file_type: file_type,
+      })
+      .then((res) => {
+        setFileInfo(res.data.file);
+      });
+  }, [file_type, index, templateid]);
 
   const UploadFile = React.useCallback(
     (e) => {
@@ -140,12 +155,12 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
               notify(res.data.message)();
             } else {
               notify(res.data.message)();
-              Signout();
+              // Signout();
             }
           });
       }
     },
-    [Signout, file, index, notify, setPopUp2, templateid]
+    [file, index, notify, setPopUp2, templateid]
   );
   const DownloadFile = React.useCallback(() => {
     axios
@@ -155,16 +170,11 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
           index: index,
           type: file_type,
         },
+        responseType: "blob",
       })
-      .then((res) => {
-          console.log(res);
-        // if (!res.data.success) {
-        //   Signout();
-        // }
-        // setPopUp2(false);
-        // notify(res.data.message)();
-      });
-  }, [file_type, index, templateid]);
+      .then((res) => fileDownload(res.data, fileInfo))
+      .catch(() => notify("First Upload a file !")());
+  }, [fileInfo, file_type, index, notify, templateid]);
 
   const UpdateWeb = React.useCallback(
     (e) => {
@@ -295,6 +305,41 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
               </form>
             ) : (
               <div>
+                <div className="mx-6 mt-6">
+                  {fileInfo ? (
+                    <div className="flex items-center gap-2 text-green-400">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-8 w-8"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="font-bold">File uploaded : {fileInfo}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-red-400">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="font-bold">File not uploaded</span>
+                    </div>
+                  )}
+                </div>
                 <form>
                   <div className="p-6 text-white">
                     <label

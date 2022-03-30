@@ -29,7 +29,8 @@ var {
   ClientPostDashboard,
 
   ClientPostUploadFile,
-  ClientGetDownloadFile
+  ClientGetDownloadFile,
+  ClientPostFileInfo
 } = require("../../controller/adminController");
 
 router.route("/register").get(AdminRegisterGet).post(AdminRegisterPost);
@@ -46,6 +47,7 @@ router
 
 router.route("/d/upload").post(AuthenticateClient, ClientPostUploadFile);
 router.route("/d/download").get(AuthenticateClient, ClientGetDownloadFile);
+router.route("/d/file").post(AuthenticateClient, ClientPostFileInfo);
 
 router.use(AuthenticateAdmin);
 
