@@ -20,6 +20,13 @@ const MemberSchema = new Schema({
         type : mongoose.Types.ObjectId,
         ref : 'User'
     },
+    active : {
+        type : Boolean,
+        default : false
+    },
+    expiredAt : {
+        type : Date,
+    },
     template : [
         {
             type: mongoose.Types.ObjectId,

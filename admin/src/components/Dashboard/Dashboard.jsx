@@ -184,7 +184,7 @@ export const DashboardHeader = () => {
 //MANAGE ROUTES
 //MANAGE ROUTES
 
-const Popup = () => {
+const Popup = ({ manageTemplateId }) => {
   const [members, setMembers] = useState([]);
   const [add, setAdd] = useState("");
   const [error, setError] = useState(false);
@@ -210,6 +210,7 @@ const Popup = () => {
     axios
       .post("/api/user", {
         userAdd: add,
+        template_id : manageTemplateId
       })
       .then((res) => {
         if (res.data.success) {
@@ -222,20 +223,24 @@ const Popup = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, [GetUserMember, add]);
+  }, [GetUserMember, add, manageTemplateId]);
 
   const AdminDeleteUser = React.useCallback(
     (e) => {
       return () => {
-        axios.delete("/api/user/", { data: { email: e.email } }).then((res) => {
-          if (res.data.success) {
-            notify(`${e.email} removed`)();
-            GetUserMember();
-          }
-        });
+        axios
+          .delete("/api/user/", {
+            data: { email: e.email, template_id: manageTemplateId },
+          })
+          .then((res) => {
+            if (res.data.success) {
+              notify(`${e.email} removed`)();
+              GetUserMember();
+            }
+          });
       };
     },
-    [GetUserMember]
+    [GetUserMember, manageTemplateId]
   );
 
   const notify = (message) => {
@@ -724,7 +729,7 @@ export const Manage = () => {
           <div className="sticky top-8 bg-blue-700 rounded p-4 mb-2">
             <div>
               <span className="font-semibold">Users</span>
-              <Popup />
+              <Popup manageTemplateId={manageTemplateId} />
             </div>
           </div>
         </div>
@@ -886,15 +891,3 @@ const TemplateView = ({ data, manageTemplateId, manageTemplate, index }) => {
     );
   }
 };
-// overflow-hidden lg:overflow-auto scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-transparent scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded dark:scrollbar-track:!bg-slate-500/[0.16] dark:scrollbar-thumb:!bg-slate-500/50 max-h-96 supports-scrollbars:pr-2 lg:max-h-96
-
-// <div className="fixed z-50 right-0 top-0 bottom-0 backdrop-grayscale backdrop-blur-sm h-full w-full flex items-center justify-center">
-//   <div
-//     aria-hidden="true"
-//     // className="overflow-y-auto overflow-x-hidden fixed right-4 left-4 top-4 z-50 "
-//   >
-//     <div className="relative px-4 w-full max-w-2xl h-full md:h-auto">
-
-//     </div>
-//   </div>
-// </div>

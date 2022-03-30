@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/alt-text */
-import React, { useEffect, useState, useContext , useCallback } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import { TreeContext } from "../../Contexts/TreeContext";
 import "flowbite";
 
@@ -9,7 +9,7 @@ import "flowbite";
 // TODO : succesfuly uplooaded status
 
 const Popup = (props) => {
-  const { popup , data , setPopup , smartDelete } = props;
+  const { popup, data, setPopup, smartDelete } = props;
 
   const { treeData, SET_TREE_DATA } = useContext(TreeContext);
   const [Data, setData] = useState({
@@ -18,38 +18,41 @@ const Popup = (props) => {
     parent: "",
     level: "",
     index: "",
-    data : null
+    data: null,
   });
 
-  const checkBoxHandler = useCallback((e) => {
-    const { name, checked } = e.target;
+  const checkBoxHandler = useCallback(
+    (e) => {
+      const { name, checked } = e.target;
 
-    setData({
-      ...Data,
-      data: {
-        ...Data.data,
-        [name]: checked,
-      },
-    });
-  },[Data]);
+      setData({
+        ...Data,
+        data: {
+          ...Data.data,
+          [name]: checked,
+        },
+      });
+    },
+    [Data]
+  );
 
   useEffect(() => {
     setData(data);
   }, [data]);
 
-  const isDataAvailable = (name)=>{
-    if(Data.data === null ) return false;
+  const isDataAvailable = (name) => {
+    if (Data.data === null) return false;
     else if (Data.data?.[name] === undefined) return false;
     else return Data.data?.[name];
-  }
+  };
 
   const help = {
     get isChildrenAvailable() {
-      if (treeData.length === 1) return false; 
+      if (treeData.length === 1) return false;
       else if (treeData.length === Data.index + 1) return false;
       else if (treeData[Data.index + 1].level === Data.level + 1) return true;
       else return false;
-    }
+    },
   };
   // console.log(Data);
 
@@ -175,7 +178,7 @@ const Popup = (props) => {
                         aria-describedby="checkbox-image"
                         type="checkbox"
                         name="image"
-                        checked={isDataAvailable('image') ? "checked" : ""}
+                        checked={isDataAvailable("image") ? "checked" : ""}
                         onChange={checkBoxHandler}
                         className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />
@@ -192,7 +195,7 @@ const Popup = (props) => {
                         aria-describedby="checkbox-excel"
                         type="checkbox"
                         name="excel"
-                        checked={isDataAvailable('excel') ? "checked" : ""}
+                        checked={isDataAvailable("excel") ? "checked" : ""}
                         onChange={checkBoxHandler}
                         className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />
@@ -209,7 +212,7 @@ const Popup = (props) => {
                         aria-describedby="checkbox-pdf"
                         type="checkbox"
                         name="pdf"
-                        checked={isDataAvailable('pdf') ? "checked" : ""}
+                        checked={isDataAvailable("pdf") ? "checked" : ""}
                         onChange={checkBoxHandler}
                         className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />
@@ -226,7 +229,7 @@ const Popup = (props) => {
                         aria-describedby="checkbox-text"
                         type="checkbox"
                         name="text"
-                        checked={isDataAvailable('text') ? "checked" : ""}
+                        checked={isDataAvailable("text") ? "checked" : ""}
                         onChange={checkBoxHandler}
                         className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />
@@ -243,7 +246,7 @@ const Popup = (props) => {
                         aria-describedby="checkbox-web"
                         type="checkbox"
                         name="web"
-                        checked={isDataAvailable('web') ? "checked" : ""}
+                        checked={isDataAvailable("web") ? "checked" : ""}
                         onChange={checkBoxHandler}
                         className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                       />

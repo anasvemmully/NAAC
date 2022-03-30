@@ -1,10 +1,28 @@
-var User = require("../models/users");
-// var Meta = require('../models/meta');
-var Template = require("../models/template");
-var Member = require("../models/member");
-var User = require("../models/users");
-var bcrypt = require("bcrypt");
-var passport = require("passport");
+// const User = require("../models/users");
+// const Meta = require('../models/meta');
+const Template = require("../models/template");
+const Member = require("../models/member");
+const User = require("../models/users");
+const OTP = require("../models/otp");
+
+const { v4: uuidv4 } = require("uuid");
+const path = require("path");
+const fs = require("fs");
+
+const bcrypt = require("bcrypt");
+const passport = require("passport");
+
+require("dotenv").config();
+
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.AUTH_MAIL_USER_ID,
+    pass: process.env.AUTH_MAIL_USER_PASSWORD,
+  },
+});
 
 const AdminRegisterGet = (req, res, next) => {
   User.findOne(
@@ -293,11 +311,14 @@ const AdminGetUser = async (req, res, next) => {
 };
 
 const AdminPostUser = async (req, res, next) => {
-  console.log(req.body.userAdd);
+  const { userAdd, template_id } = req.body;
+
   const member = new Member({
-    email: req.body.userAdd,
+    email: userAdd,
     ParentId: req.user._id,
   });
+  member.template.push(template_id);
+
   await member
     .save()
     .then((member) => {
@@ -313,13 +334,39 @@ const AdminPostUser = async (req, res, next) => {
 };
 
 const AdminDeleteUser = async (req, res, next) => {
+  const { email, template_id } = req.body;
+
   await Member.findOneAndDelete({
-    email: req.body.email,
-  }).then((member) => {
-    res.status(200).send({
-      message: "User Deleted",
-      success: true,
-    });
+    email: email,
+  }).then(async (member) => {
+    await Template.findById({
+      _id: template_id,
+    })
+      .then((template) => {
+        const temp = template.handle.role;
+        if (Object.keys(template.handle.role).includes(email)) {
+          const index = temp[email][0];
+          const expand =
+            template.handle.indexRole[index] === undefined
+              ? []
+              : template.handle.indexRole[index].filter((e) => e !== email);
+          template.handle.indexRole = {
+            ...template.handle.indexRole,
+            [index]: [...expand],
+          };
+          delete temp[email];
+        }
+        template.handle.role = { ...temp };
+        template.markModified("handle.role");
+
+        template.save().then(() => {
+          res.status(200).send({
+            message: "User Deleted",
+            success: true,
+          });
+        });
+      })
+      .catch((err) => {});
   });
 };
 
@@ -458,6 +505,421 @@ const AdminDeleteRoleUser = async (req, res, next) => {
   });
 };
 
+const ClientPostLogin = async (req, res, next) => {
+  //otp generation part and model saving
+  const { email } = req.body;
+
+  try {
+    await Member.findOne({ email }).then(async (member) => {
+      if (member !== null) {
+        const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
+
+        const options = {
+          from: process.env.AUTH_MAIL_USER_ID,
+          to: email,
+          subject: "Sending email with node js",
+          html: `<p>Here is your  OTP code : <b>${otp}</b><br>the OTP code is valid for 1 hour. <br>Hurry up !!!</p>`,
+        };
+        const otpModel = new OTP({
+          user_id: member._id,
+          email: email,
+          otp: otp,
+          createdAt: new Date(),
+          expiresAt: new Date(new Date().getTime() + 3600000),
+        });
+        otpModel.save().then(() => {
+          transporter.sendMail(options, function (error, info) {
+            if (error) {
+              console.log(error);
+            } else {
+              console.log("Email sent: " + info.response);
+            }
+          });
+          res.status(200).send({
+            message: "OTP Sent",
+            success: true,
+            userid: member._id,
+            email: member.email,
+          });
+        });
+      } else {
+        res.status(200).send({
+          status: false,
+          message: "Email Not Found",
+        });
+      }
+    });
+  } catch (err) {
+    res.status(500).send({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const ClientOTPGetVerification = async (req, res, next) => {
+  const { otp_code, id } = req.query;
+
+  try {
+    if (otp_code === undefined || id === undefined) {
+      new Error("Invalid Credentials");
+    } else {
+      await OTP.find({
+        user_id: id,
+      }).then(async (e) => {
+        if (e.length === 0) {
+          res.status(200).send({
+            status: false,
+            message: "Account record doesn't exist",
+          });
+        } else {
+          const { expiresAt, otp } = e[0];
+          if (expiresAt < new Date()) {
+            await OTP.deleteMany({
+              user_id: id,
+            });
+            res.status(200).send({
+              status: false,
+              message: "OTP Expired",
+            });
+          } else {
+            if (otp_code === otp) {
+              await OTP.deleteMany({
+                user_id: id,
+              });
+              await Member.findOne({
+                email: e[0].email,
+              }).then((member) => {
+                member.active = true;
+                member.expiredAt = new Date(new Date().getTime() + 3600000);
+                member.save().then(() => {
+                  let token = new Buffer(
+                    JSON.stringify({
+                      id: member._id,
+                      email: member.email,
+                    })
+                  ).toString("base64");
+                  res.setHeader("Set-Cookie", [
+                    `connect.u3/i(=${token}; HttpOnly; Max-Age=36000000;`,
+                  ]);
+
+                  res.status(200).send({
+                    message: "OTP Verified",
+                    success: true,
+                    data: {
+                      id: member._id,
+                      email: member.email,
+                    },
+                  });
+                });
+              });
+            } else {
+              res.status(200).send({
+                status: false,
+                message: "Invalid OTP",
+              });
+            }
+          }
+        }
+      });
+    }
+  } catch (err) {
+    res.status(200).send({
+      status: false,
+      message: "Something Unexpected happened",
+    });
+  }
+};
+
+const ClientPostResendOTP = async (req, res, next) => {
+  const { id, email } = req.body;
+  try {
+    if (id === undefined || email === undefined) {
+      throw Error("Invalid Credentials");
+    }
+    await OTP.deleteMany({
+      user_id: id,
+    }).then(async () => {
+      await Member.findOne({ email }).then(async (member) => {
+        if (member !== null) {
+          const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
+
+          const options = {
+            from: process.env.AUTH_MAIL_USER_ID,
+            to: email,
+            subject: "Sending email with node js",
+            html: `<p>Here is your  OTP code : <b>${otp}</b><br>the OTP code is valid for 1 hour. <br>Hurry up !!!</p>`,
+          };
+          const otpModel = new OTP({
+            user_id: member._id,
+            email: email,
+            otp: otp,
+            createdAt: new Date(),
+            expiresAt: new Date(new Date().getTime() + 3600000),
+          });
+          otpModel.save().then(() => {
+            transporter.sendMail(options, function (error, info) {
+              if (error) {
+                console.log(error);
+              } else {
+                console.log("Email sent: " + info.response);
+              }
+            });
+            res.status(200).send({
+              message: "OTP Sent",
+              success: true,
+              userid: member._id,
+              email: member.email,
+            });
+          });
+        } else {
+          res.status(200).send({
+            status: false,
+            message: "Email Not Found",
+          });
+        }
+      });
+    });
+  } catch (error) {
+    res.status(200).send({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+const ClientPostLogout = async (req, res, next) => {
+  const { id } = req.body;
+  try {
+    if (id === undefined) {
+      throw Error("Invalid Credentials");
+    }
+    await Member.findById({
+      _id: id,
+    }).then((member) => {
+      member.active = false;
+      member.save().then(() => {
+        res.status(200).send({
+          message: "Logged Out",
+          success: true,
+        });
+      });
+    });
+  } catch (error) {
+    res.status(200).send({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+const ClientGetDashboard = async (req, res, next) => {
+  try {
+    await Member.findById(req.userid).then(async (member) => {
+      if (member) {
+        const user_member = await User.findById(member.ParentId)
+          .populate({
+            model: "Template",
+            path: "template",
+            options: { sort: { isActive: -1 } },
+          })
+          .exec();
+        const temp = user_member.template
+          ?.filter((e) => !e.isComplete && e.islive)
+          .map((e, i) => {
+            return {
+              name: e.name,
+              id: e._id,
+              createdAt: e.createdAt,
+            };
+          });
+
+        res.status(200).send({
+          message: "Success",
+          success: true,
+          template: temp,
+        });
+      } else {
+        throw Error("Something Unexpected happened !");
+      }
+    });
+  } catch (error) {
+    res.status(200).send({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+const ClientPostDashboard = async (req, res, next) => {
+  try {
+    const { templateid } = req.body;
+    await Template.findById(templateid).then((t) => {
+      if (t) {
+        const limits = t.handle.role[req.email];
+        const layout = t.layout.slice(limits[0], limits[1]);
+        const range = Array(limits[1] - limits[0] + 1)
+          .fill()
+          .map((_, idx) => limits[0] + idx);
+        res.status(200).send({
+          message: "Success",
+          success: true,
+          template: {
+            layout: layout.map((e, i) => {
+              return {
+                ...e,
+                index: range[i],
+              };
+            }),
+            name: t.name,
+          },
+        });
+      } else {
+        throw new Error("Something Went Wrong !");
+      }
+    });
+  } catch (error) {
+    console.log("inside ClientPostDashboard");
+    res.status(200).send({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+const ClientPostUploadFile = async (req, res, next) => {
+  try {
+    const { templateid, index } = JSON.parse(req.body.misc);
+    var type = "";
+
+    if (!req.files) {
+      throw new Error("No file uploaded");
+    } else {
+      //check fot image file
+      if (
+        req.files.file.mimetype.startsWith("image/") ||
+        req.files.file.mimetype.endsWith("jpeg") ||
+        req.files.file.mimetype.endsWith("jpg") ||
+        req.files.file.mimetype.endsWith("png")
+      ) {
+        if (req.files.file.size > 1000000) {
+          throw new Error("File size is too large");
+        }
+        type = "image";
+      }
+      //check fot text file
+      else if (
+        req.files.file.mimetype.startsWith("text/") ||
+        req.files.file.mimetype.endsWith("plain")
+      ) {
+        if (req.files.file.size > 500000) {
+          throw new Error("File size is too large");
+        }
+        type = "text";
+      }
+      //check for pdf file
+      else if (req.files.file.mimetype.startsWith("application/pdf")) {
+        if (req.files.file.size > 10000000) {
+          throw new Error("File size is too large");
+        }
+        type = "pdf";
+      }
+      //check for excel file
+      else if (
+        req.files.file.mimetype.startsWith("application/vnd.ms-excel") ||
+        req.files.file.mimetype.startsWith(
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+      ) {
+        if (req.files.file.size > 1000000) {
+          throw new Error("File size is too large");
+        }
+        type = "excel";
+      } else {
+        throw new Error("Invalid File Type");
+      }
+
+      await Template.findById(templateid).then((t) => {
+        if (t) {
+          if (fs.existsSync(t.handle.publish[index][type].path)) {
+            fs.unlinkSync(t.handle.publish[index][type].path);
+          }
+          console.log("file not existed");
+          const file = req.files.file;
+          const file_name = `${uuidv4()}.${file.name.split(".").pop()}`;
+          const path = `./uploads/${file_name}`;
+          console.log(path);
+          file.mv(path, async (err) => {
+            if (err) {
+              throw new Error("something went wrong !");
+            } else {
+              await Template.findById(templateid).then((t) => {
+                if (t) {
+                  t.handle.publish[index][type] = {
+                    path: path,
+                    file_name: file_name,
+                    name : file.name,
+                  };
+                  t.markModified("handle.publish");
+                  t.save().then((t) => {
+                    console.log(t.handle.publish[index][type]);
+                    res.status(200).send({
+                      message: "File Uploaded Successfully",
+                      success: true,
+                    });
+                  });
+                } else {
+                  throw new Error("Something Went Wrong !");
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  } catch (error) {
+    res.status(200).send({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const ClientGetDownloadFile = async (req, res, next) => {
+  try {
+    const { templateid, index, type } = req.query;
+    await Template.findById(templateid).then((t) => {
+      if (t) {
+        const file = t.handle.publish[index][type];
+        if (fs.existsSync(t.handle.publish[index][type].path)) {
+          res.sendFile(file.file_name ,{
+            headers: {
+              "Content-Disposition": `attachment; ${file.file_name}`,
+            },
+            root : './uploads/'
+
+          }, (err)=>{
+            if (err) {
+              next(err)
+            } else {
+              console.log('Sent:', file.file_name)
+            }
+          });
+        } else {
+          throw new Error("File Not Found");
+        }
+      } else {
+        throw new Error("Something Went Wrong !");
+      }
+    });
+  } catch (error) {
+    res.status(200).send({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   AdminRegisterGet,
   AdminRegisterPost,
@@ -475,4 +937,14 @@ module.exports = {
   AdminPostRoleUser,
   AdminPostRoleUserGet,
   AdminDeleteRoleUser,
+
+  ClientPostLogin,
+  ClientOTPGetVerification,
+  ClientPostResendOTP,
+  ClientPostLogout,
+  ClientGetDashboard,
+  ClientPostDashboard,
+
+  ClientPostUploadFile,
+  ClientGetDownloadFile,
 };

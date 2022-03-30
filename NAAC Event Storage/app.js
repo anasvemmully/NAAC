@@ -6,6 +6,9 @@ var logger = require('morgan');
 var cors = require('cors');
 var mongoose = require('mongoose');
 var passport  = require('passport');
+
+var filupload = require('express-fileupload');
+
 require('dotenv').config()
 
 var session = require('express-session');
@@ -47,6 +50,7 @@ app.use(cors(
 ));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(filupload());
 app.use(express.static(path.join(__dirname, 'public')));
 
 
