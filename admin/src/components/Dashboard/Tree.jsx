@@ -1,5 +1,7 @@
 import React, { useContext, useState } from "react";
 import { TreeContextProvider, TreeContext } from "../../Contexts/TreeContext";
+import { AuthContext } from "../../authentication/Auth";
+
 import axios from "axios";
 
 import { toast, Slide } from "react-toastify";
@@ -9,7 +11,7 @@ import { useParams } from "react-router-dom";
 import { animateScroll as scroll } from "react-scroll";
 
 import Popup from "../PopUp/popup.jsx";
-import  {useNavigate} from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 toast.configure();
 
@@ -230,6 +232,7 @@ const Wrapper = () => {
   const { TemplateId } = useParams();
   const { UPDATE, settemplateName, setTreeData, settemplateID } =
     useContext(TreeContext);
+  const { Signout } = useContext(AuthContext);
 
   React.useEffect(() => {
     axios
@@ -240,9 +243,9 @@ const Wrapper = () => {
         settemplateID(res.data.data.id);
       })
       .catch((err) => {
-        console.log(err);
+        Signout();
       });
-  }, [setTreeData, settemplateName, TemplateId, settemplateID]);
+  }, [setTreeData, settemplateName, TemplateId, settemplateID, Signout]);
 
   return (
     <div className="flex flex-row gap-x-8">

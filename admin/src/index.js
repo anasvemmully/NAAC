@@ -26,8 +26,9 @@ import {
   Dashboard,
   Manage,
   Create,
-  View,
 } from "./components/Dashboard/Dashboard";
+
+import { View } from "./components/Dashboard/AdminMangeViewTemplate";
 
 const NotFound = () => {
   const Style = {

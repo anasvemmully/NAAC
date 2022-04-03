@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable array-callback-return */
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { Outlet, NavLink, Link } from "react-router-dom";
@@ -24,7 +26,7 @@ export const Dashboard = () => {
         }
       })
       .catch((err) => {
-        console.log(err);
+        Signout();
       });
   }, [Signout]);
 
@@ -119,14 +121,7 @@ export const Create = () => {
   return <Tree />;
 };
 
-export const View = () => {
-  return (
-    <>
-      Forms View are amde here Lorem ipsum dolor sit amet consectetur
-      adipisicing elit. Quam tempora sequi ipsa!
-    </>
-  );
-};
+
 
 export const DashboardHeader = () => {
   const { user, Signout } = useContext(AuthContext);
@@ -193,6 +188,7 @@ const Popup = ({ manageTemplateId }) => {
 
   useEffect(() => {
     GetUserMember();
+  // eslint-disable-next-line no-use-before-define
   }, []);
 
   const GetUserMember = React.useCallback(() => {
@@ -210,7 +206,7 @@ const Popup = ({ manageTemplateId }) => {
     axios
       .post("/api/user", {
         userAdd: add,
-        template_id : manageTemplateId
+        template_id: manageTemplateId,
       })
       .then((res) => {
         if (res.data.success) {
@@ -362,6 +358,7 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
   useEffect(() => {
     GetUserMember();
     GetRolesMember();
+  // eslint-disable-next-line no-use-before-define
   }, []);
 
   const GetRolesMember = React.useCallback(async () => {
@@ -623,7 +620,7 @@ export const Manage = () => {
         }
       })
       .catch((err) => {
-        console.log(err);
+        Signout();
       });
   }, [Signout]);
 
@@ -635,8 +632,8 @@ export const Manage = () => {
         setManageTemplateName(res.data.data.name);
         setManageTemplateId(res.data.data.id);
       })
-      .catch((err) => {});
-  }, []);
+      .catch(()=>Signout());
+  }, [Signout]);
 
   return (
     <div>

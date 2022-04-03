@@ -1,7 +1,11 @@
+/* eslint-disable array-callback-return */
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Outlet, NavLink, Link, useParams } from "react-router-dom";
 import { ClientContext } from "../../authentication/ClientAuth";
+
+// import { Scrollspy } from "@makotot/ghostui";
+// import Scrollspy from "react-scrollspy";
 
 import { FileUploadPopUp } from "../PopUp/FileUploadPopUp";
 
@@ -114,8 +118,18 @@ export const FillClient = () => {
     });
   }, [Signout, templateid]);
 
-  console.log(template);
+  // const items = () => template?.layout
+  //   .map((e, i) => {
+  //     if (e.type === "section") {
+  //       return `section-${i}`;
+  //     }
+  //   })
+  //   .filter((e) => e !== undefined);
+
+  // console.log(items());
   return (
+    // <Scrollspy sectionRefs={sectionRefs}>
+    //   {({ currentElementIndexInViewport }) => (
     <div className="flex flex-row gap-x-8 text-white">
       <div className="basis-8/12 border-r-2 border-white pr-8">
         {template && (
@@ -141,8 +155,8 @@ export const FillClient = () => {
         <div className="pl-4 ">
           {/* scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-transparent scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded dark:scrollbar-track:!bg-slate-500/[0.16] dark:scrollbar-thumb:!bg-slate-500/50 max-h-96 supports-scrollbars:pr-2 lg:max-h-96 */}
           {template &&
-            template.layout?.map((e, _) => (
-              <TemplateView key={e.index} data={e} />
+            template.layout?.map((e, i) => (
+              <TemplateView key={e.index} data={e} id={`section-${i}`} />
             ))}
         </div>
       </div>
@@ -150,22 +164,51 @@ export const FillClient = () => {
         <div className="sticky top-8 rounded p-4 mb-2">
           <div>
             <span className="font-semibold">Table of Contents : </span>
-            {/* <Popup manageTemplateId={manageTemplateId} /> */}
+            {/* {template?.layout && (
+              <Scrollspy
+                offset={0}
+                items={items()}
+                currentClassName="font-bold border-slate-100"
+              > */}
+            {template &&
+              // eslint-disable-next-line array-callback-return
+              template.layout.map((e, i) => {
+                if (e.type === "section") {
+                  return (
+                    <li
+                      style={{
+                        marginLeft: `${e.level * 1.6}rem`,
+                      }}
+                      key={i}
+                      className="text-sm py-2 pl-5 border-l-2 border-slate-500 list-none"
+                    >
+                      <a href={`#section-${i}`}>
+                        {e.title.slice(0, 40) +
+                          (e.title.length > 40 ? "..." : "")}
+                      </a>
+                    </li>
+                  );
+                }
+              })}
+            {/* </Scrollspy>
+            )} */}
           </div>
         </div>
       </div>
     </div>
+    //   )}
+    // </Scrollspy>
   );
 };
 
-const TemplateView = ({ data }) => {
+const TemplateView = ({ data, id }) => {
   let style = {
     marginLeft: `${data.level * 3}rem`,
   };
 
   if (data.type === "section") {
     return (
-      <div id="" className="flex items-center py-1" style={style}>
+      <div id={id} className="flex items-center py-1" style={style}>
         <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -205,15 +248,15 @@ const TemplateView = ({ data }) => {
               // eslint-disable-next-line default-case
               switch (f) {
                 case "image":
-                  return <Image key={index} res={res} file_type={f}/>;
+                  return <Image key={index} res={res} file_type={f} />;
                 case "text":
-                  return <Text key={index} res={res} file_type={f}/>;
+                  return <Text key={index} res={res} file_type={f} />;
                 case "excel":
-                  return <Excel key={index} res={res} file_type={f}/>;
+                  return <Excel key={index} res={res} file_type={f} />;
                 case "pdf":
-                  return <Pdf key={index} res={res} file_type={f}/>;
+                  return <Pdf key={index} res={res} file_type={f} />;
                 case "web":
-                  return <Web key={index} res={res} file_type={f}/>;
+                  return <Web key={index} res={res} file_type={f} />;
               }
             })}
         </div>
@@ -222,7 +265,7 @@ const TemplateView = ({ data }) => {
   }
 };
 
-const Image = ({res , file_type}) => {
+const Image = ({ res, file_type }) => {
   const [PopUp2, setPopUp2] = useState(false);
 
   return (
@@ -243,12 +286,18 @@ const Image = ({res , file_type}) => {
           </svg>
         </div>
       </button>
-      {PopUp2 && <FileUploadPopUp setPopUp2={setPopUp2} res={res} file_type={file_type}/>}
+      {PopUp2 && (
+        <FileUploadPopUp
+          setPopUp2={setPopUp2}
+          res={res}
+          file_type={file_type}
+        />
+      )}
     </>
   );
 };
 
-const Text = ({res , file_type}) => {
+const Text = ({ res, file_type }) => {
   const [PopUp2, setPopUp2] = useState(false);
 
   return (
@@ -271,12 +320,18 @@ const Text = ({res , file_type}) => {
           </svg>
         </div>
       </button>
-      {PopUp2 && <FileUploadPopUp setPopUp2={setPopUp2} res={res} file_type={file_type}/>}
+      {PopUp2 && (
+        <FileUploadPopUp
+          setPopUp2={setPopUp2}
+          res={res}
+          file_type={file_type}
+        />
+      )}
     </>
   );
 };
 
-const Excel = ({res , file_type}) => {
+const Excel = ({ res, file_type }) => {
   const [PopUp2, setPopUp2] = useState(false);
 
   return (
@@ -299,12 +354,18 @@ const Excel = ({res , file_type}) => {
           </svg>
         </div>
       </button>
-      {PopUp2 && <FileUploadPopUp setPopUp2={setPopUp2} res={res} file_type={file_type}/>}
+      {PopUp2 && (
+        <FileUploadPopUp
+          setPopUp2={setPopUp2}
+          res={res}
+          file_type={file_type}
+        />
+      )}
     </>
   );
 };
 
-const Pdf = ({res , file_type}) => {
+const Pdf = ({ res, file_type }) => {
   const [PopUp2, setPopUp2] = useState(false);
 
   return (
@@ -327,12 +388,18 @@ const Pdf = ({res , file_type}) => {
           </svg>
         </div>
       </button>
-      {PopUp2 && <FileUploadPopUp setPopUp2={setPopUp2} res={res} file_type={file_type}/>}
+      {PopUp2 && (
+        <FileUploadPopUp
+          setPopUp2={setPopUp2}
+          res={res}
+          file_type={file_type}
+        />
+      )}
     </>
   );
 };
 
-const Web = ({res , file_type}) => {
+const Web = ({ res, file_type }) => {
   const [PopUp2, setPopUp2] = useState(false);
 
   return (
@@ -355,7 +422,13 @@ const Web = ({res , file_type}) => {
           </svg>
         </div>
       </button>
-      {PopUp2 && <FileUploadPopUp setPopUp2={setPopUp2} res={res} file_type={file_type}/>}
+      {PopUp2 && (
+        <FileUploadPopUp
+          setPopUp2={setPopUp2}
+          res={res}
+          file_type={file_type}
+        />
+      )}
     </>
   );
 };
@@ -374,7 +447,7 @@ export const DashboardClientHeader = () => {
           </div>
           <div className="flex gap-x-12">
             <div>
-              <span>Hi {user.username || "Anonymous"}</span>
+              <span>Hi {user.email || "Anonymous"}</span>
             </div>
             <button onClick={Signout} className="px-3">
               <i className="fa fa-sign-out" aria-hidden="true"></i>

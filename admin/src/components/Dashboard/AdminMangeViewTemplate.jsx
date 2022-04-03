@@ -1,11 +1,273 @@
-/* eslint-disable no-useless-escape */
-/* eslint-disable jsx-a11y/alt-text */
 import axios from "axios";
-import fileDownload from "js-file-download";
 import React, { useEffect, useState } from "react";
-import { ClientContext } from "../../authentication/ClientAuth";
-
 import { useParams } from "react-router-dom";
+import { AuthContext } from "../../authentication/Auth";
+import fileDownload from "js-file-download";
+// import { Tree } from "./Tree";
+// import Scrollspy from "react-scrollspy";
+
+// import { toast, Slide } from "react-toastify";
+
+export const View = () => {
+  const { Signout } = React.useContext(AuthContext);
+
+  const [template, setTemplate] = useState([]);
+  const { ViewId } = useParams();
+
+  useEffect(() => {
+    axios.post("/api/dashboard/view", { templateid: ViewId }).then((res) => {
+      if (res.data.success) {
+        setTemplate(res.data.template);
+      } else {
+        Signout();
+      }
+    });
+  }, [Signout, ViewId]);
+
+  // const items = () => template?.layout
+  //   .map((e, i) => {
+  //     if (e.type === "section") {
+  //       return `section-${i}`;
+  //     }
+  //   })
+  //   .filter((e) => e !== undefined);
+
+  // console.log(items());
+  return (
+    <div className="flex flex-row gap-x-8 text-white">
+      <div className="basis-8/12 border-r-2 border-white pr-8">
+        {template && (
+          <div className="p-4">
+            <div className="font-semibold text-xl">{template.name}</div>
+            <div className="flex py-1">
+              <svg
+                className="mr-2 w-4 h-4"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
+              <div className="text-xs">Upload files in to the form !</div>
+            </div>
+          </div>
+        )}
+        <div className="pl-4 ">
+          {/* scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-transparent scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded dark:scrollbar-track:!bg-slate-500/[0.16] dark:scrollbar-thumb:!bg-slate-500/50 max-h-96 supports-scrollbars:pr-2 lg:max-h-96 */}
+          {template &&
+            template.layout?.map((e, index) => (
+              <TemplateViewManage
+                key={index}
+                data={e}
+                index={index}
+                id={`section-${index}`}
+              />
+              // !important uncomment this
+            ))}
+        </div>
+      </div>
+      <div className="basis-4/12">
+        <div className="sticky top-8 rounded p-4 mb-2">
+          <div>
+            <span className="font-semibold">Table of Contents : </span>
+                {template.layout &&
+                  // eslint-disable-next-line array-callback-return
+                  template?.layout.map((e, i) => {
+                    if (e.type === "section") {
+                      return (
+                        <li
+                          style={{
+                            marginLeft: `${e.level * 1.6}rem`,
+                          }}
+                          key={i}
+                          className="text-sm py-2 pl-5 border-l-2 border-slate-500 list-none"
+                        >
+                          <a href={`#section-${i}`}>
+                            {e.title.slice(0, 40) +
+                              (e.title.length > 40 ? "..." : "")}
+                          </a>
+                        </li>
+                      );
+                    }
+                  })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Image = ({ res, file_type }) => {
+  const [PopUp2, setPopUp2] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setPopUp2(true)}>
+        <div className="px-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </div>
+      </button>
+      {PopUp2 && (
+        <FileUploadPopUp
+          setPopUp2={setPopUp2}
+          res={res}
+          file_type={file_type}
+        />
+      )}
+    </>
+  );
+};
+
+const Text = ({ res, file_type }) => {
+  const [PopUp2, setPopUp2] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setPopUp2(true)}>
+        <div className="px-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+        </div>
+      </button>
+      {PopUp2 && (
+        <FileUploadPopUp
+          setPopUp2={setPopUp2}
+          res={res}
+          file_type={file_type}
+        />
+      )}
+    </>
+  );
+};
+
+const Excel = ({ res, file_type }) => {
+  const [PopUp2, setPopUp2] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setPopUp2(true)}>
+        <div className="px-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
+      </button>
+      {PopUp2 && (
+        <FileUploadPopUp
+          setPopUp2={setPopUp2}
+          res={res}
+          file_type={file_type}
+        />
+      )}
+    </>
+  );
+};
+
+const Pdf = ({ res, file_type }) => {
+  const [PopUp2, setPopUp2] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setPopUp2(true)}>
+        <div className="px-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
+      </button>
+      {PopUp2 && (
+        <FileUploadPopUp
+          setPopUp2={setPopUp2}
+          res={res}
+          file_type={file_type}
+        />
+      )}
+    </>
+  );
+};
+
+const Web = ({ res, file_type }) => {
+  const [PopUp2, setPopUp2] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setPopUp2(true)}>
+        <div className="px-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+            />
+          </svg>
+        </div>
+      </button>
+      {PopUp2 && (
+        <FileUploadPopUp
+          setPopUp2={setPopUp2}
+          res={res}
+          file_type={file_type}
+        />
+      )}
+    </>
+  );
+};
 
 const Icon = ({ file_type }) => {
   // eslint-disable-next-line default-case
@@ -105,22 +367,22 @@ const Icon = ({ file_type }) => {
   }
 };
 
-export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
+const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
   const { index } = res;
 
-  const { notify, Signout } = React.useContext(ClientContext);
+  const { notify, Signout } = React.useContext(AuthContext);
   //Promise notify implemetation
 
   const [file, setFile] = useState(null);
   const [fileInfo, setFileInfo] = useState("");
   const [webLink, setWebLink] = useState("");
 
-  const templateid = useParams().templateid;
+  const { ViewId } = useParams();
 
   useEffect(() => {
     axios
-      .post("/api/d/file", {
-        templateid: templateid,
+      .post("/api/dashboard/file", {
+        templateid: ViewId,
         index: index,
         file_type: file_type,
       })
@@ -130,7 +392,7 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
         }
         setFileInfo(res.data.file);
       });
-  }, [file_type, index, templateid]);
+  }, [ViewId, file_type, index]);
 
   const UploadFile = React.useCallback(
     (e) => {
@@ -140,7 +402,7 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
       data.append(
         "misc",
         JSON.stringify({
-          templateid: templateid,
+          templateid: ViewId,
           index: index,
           file_type: file_type,
         })
@@ -148,7 +410,7 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
 
       if (file) {
         axios
-          .post("/api/d/upload/", data, {
+          .post("/api/dashboard/upload-file", data, {
             headers: {
               // "Content-Type": "multipart/form-data",
               "Content-Type": "application/octet-stream",
@@ -165,13 +427,13 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
           });
       }
     },
-    [Signout, file, file_type, index, notify, setPopUp2, templateid]
+    [Signout, ViewId, file, file_type, index, notify, setPopUp2]
   );
   const DownloadFile = React.useCallback(() => {
     axios
       .get("/api/d/download/", {
         params: {
-          templateid: templateid,
+          templateid: ViewId,
           index: index,
           type: file_type,
         },
@@ -179,7 +441,7 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
       })
       .then((res) => fileDownload(res.data, fileInfo))
       .catch(() => notify("First Upload a file !")());
-  }, [fileInfo, file_type, index, notify, templateid]);
+  }, [ViewId, fileInfo, file_type, index, notify]);
 
   const UpdateWeb = React.useCallback(
     (e) => {
@@ -187,17 +449,19 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
 
       if (
         webLink.match(
+          // eslint-disable-next-line no-useless-escape
           /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/
         )
       ) {
+        const misc = {
+          templateid: ViewId,
+          index: index,
+          file_type: file_type,
+          webLink: webLink,
+        };
         axios
-          .post("/api/d/upload/", {
-            misc: JSON.stringify({
-              templateid: templateid,
-              index: index,
-              file_type: file_type,
-              webLink: webLink,
-            }),
+          .post("/api/dashboard/upload-file", {
+            misc: JSON.stringify(misc),
           })
           .then((res) => {
             if (res.data.success) {
@@ -205,14 +469,14 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
               notify(res.data.message)();
             } else {
               notify(res.data.message)();
-              // Signout();
+              Signout();
             }
           });
       } else {
         notify("Invalid URL !")();
       }
     },
-    [file_type, index, notify, setPopUp2, templateid, webLink]
+    [Signout, ViewId, file_type, index, notify, setPopUp2, webLink]
   );
 
   const help = {
@@ -229,8 +493,6 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
       }
     },
   };
-
-  console.log(fileInfo);
 
   return (
     <div className="fixed z-50 right-0 top-0 bottom-0 backdrop-grayscale backdrop-blur-sm h-full w-full flex items-center justify-center">
@@ -472,12 +734,67 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
   );
 };
 
-// res.blob().then((blob) => {
-//   let url = window.URL.createObjectURL(blob);
-//   let a = document.createElement("a");
-//   a.href = url;
-//   a.download = "test.pdf";
-//   a.click();
-// });
-// const blob = await res.blob();
-// download(blob, "test.pdf");
+const TemplateViewManage = ({ data, index, id }) => {
+  let style = {
+    marginLeft: `${data.level * 3}rem`,
+  };
+
+  if (data.type === "section") {
+    return (
+      <div id={id} className="flex items-center py-1" style={style}>
+        <div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+            />
+          </svg>
+        </div>
+        <div>{data.title}</div>
+      </div>
+    );
+  } else {
+    const res = {
+      type: data.type,
+      index: index,
+      level: data.level,
+      parent: data.parent,
+      title: data.title,
+    };
+    const data_types = data.data
+      ? Object.keys(data.data).filter((f) => data.data[f] === true)
+      : null;
+    return (
+      <div className="p-3 ml-7 border mb-2 rounded" style={style}>
+        <div className="mb-4">{data.title}</div>
+        <div className="flex justify-end	border-t border-slate-500	pt-2">
+          {data_types &&
+            // eslint-disable-next-line array-callback-return
+            data_types.map((f, index) => {
+              // eslint-disable-next-line default-case
+              switch (f) {
+                case "image":
+                  return <Image key={index} res={res} file_type={f} />;
+                case "text":
+                  return <Text key={index} res={res} file_type={f} />;
+                case "excel":
+                  return <Excel key={index} res={res} file_type={f} />;
+                case "pdf":
+                  return <Pdf key={index} res={res} file_type={f} />;
+                case "web":
+                  return <Web key={index} res={res} file_type={f} />;
+              }
+            })}
+        </div>
+      </div>
+    );
+  }
+};

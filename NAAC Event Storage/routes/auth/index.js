@@ -21,6 +21,10 @@ var {
   AdminPostRoleUserGet,
   AdminDeleteRoleUser,
 
+  AdminPostDashboardView,
+  AdminPostFileInfo,
+  AdminPostUploadFile,
+
   ClientPostLogin,
   ClientOTPGetVerification,
   ClientPostResendOTP,
@@ -30,7 +34,7 @@ var {
 
   ClientPostUploadFile,
   ClientGetDownloadFile,
-  ClientPostFileInfo
+  ClientPostFileInfo,
 } = require("../../controller/adminController");
 
 router.route("/register").get(AdminRegisterGet).post(AdminRegisterPost);
@@ -56,6 +60,10 @@ router
   .route("/dashboard/create/:TemplateId")
   .get(AdminGetDashboardActiveTemplate)
   .post(AdminPostDashboardActiveTemplate);
+
+router.route("/dashboard/view").post(AdminPostDashboardView);
+router.route("/dashboard/file").post(AdminPostFileInfo);
+router.route("/dashboard/upload-file").post(AdminPostUploadFile);
 
 router
   .route("/dashboard/role")
