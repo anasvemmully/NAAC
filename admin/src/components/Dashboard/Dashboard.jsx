@@ -6,7 +6,7 @@ import { Outlet, NavLink, Link } from "react-router-dom";
 import { AuthContext } from "../../authentication/Auth";
 import { Tree } from "./Tree";
 
-import { toast, Slide } from "react-toastify";
+import { toast } from "react-toastify";
 
 // import Card from "./Card";
 
@@ -121,8 +121,6 @@ export const Create = () => {
   return <Tree />;
 };
 
-
-
 export const DashboardHeader = () => {
   const { user, Signout } = useContext(AuthContext);
   return (
@@ -184,11 +182,13 @@ const Popup = ({ manageTemplateId }) => {
   const [add, setAdd] = useState("");
   const [error, setError] = useState(false);
 
-  const toastId = React.useRef(null);
+  // const toastId = React.useRef(null);
+
+  const { notify } = useContext(AuthContext);
 
   useEffect(() => {
     GetUserMember();
-  // eslint-disable-next-line no-use-before-define
+    // eslint-disable-next-line no-use-before-define
   }, []);
 
   const GetUserMember = React.useCallback(() => {
@@ -206,18 +206,18 @@ const Popup = ({ manageTemplateId }) => {
     axios
       .post("/api/user", {
         userAdd: add,
-        template_id: manageTemplateId,
       })
       .then((res) => {
         if (res.data.success) {
           GetUserMember();
+          notify(`${add} added`)();
+
           setError(false);
-        } else {
-          setError(true);
         }
       })
       .catch((err) => {
-        console.log(err);
+        setError(true);
+        notify(`${add} error`, "error")();
       });
   }, [GetUserMember, add, manageTemplateId]);
 
@@ -226,7 +226,7 @@ const Popup = ({ manageTemplateId }) => {
       return () => {
         axios
           .delete("/api/user/", {
-            data: { email: e.email, template_id: manageTemplateId },
+            data: { email: e.email },
           })
           .then((res) => {
             if (res.data.success) {
@@ -239,22 +239,22 @@ const Popup = ({ manageTemplateId }) => {
     [GetUserMember, manageTemplateId]
   );
 
-  const notify = (message) => {
-    return function () {
-      if (!toast.isActive(toastId.current)) {
-        toastId.current = toast.success(message, {
-          position: "top-right",
-          transition: Slide,
-          autoClose: 1000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-        });
-      }
-    };
-  };
+  // const notify = (message) => {
+  //   return function () {
+  //     if (!toast.isActive(toastId.current)) {
+  //       toastId.current = toast.success(message, {
+  //         position: "top-right",
+  //         transition: Slide,
+  //         autoClose: 1000,
+  //         hideProgressBar: true,
+  //         closeOnClick: true,
+  //         pauseOnHover: false,
+  //         draggable: true,
+  //         progress: undefined,
+  //       });
+  //     }
+  //   };
+  // };
   // console.log(members);
 
   return (
@@ -306,7 +306,6 @@ const Popup = ({ manageTemplateId }) => {
         <button
           onClick={() => {
             AddUserMember();
-            notify(`${add} added`)();
             setAdd("");
           }}
         >
@@ -353,12 +352,14 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
   const [members, setMembers] = useState([]);
 
   const [resultMembers, setResultMembers] = useState();
-  const [roles, setRoles] = useState();
+  const [roles, setRoles] = useState([]);
+
+  const { notify } = useContext(AuthContext);
 
   useEffect(() => {
     GetUserMember();
     GetRolesMember();
-  // eslint-disable-next-line no-use-before-define
+    // eslint-disable-next-line no-use-before-define
   }, []);
 
   const GetRolesMember = React.useCallback(async () => {
@@ -388,9 +389,20 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
 
   const filterRoles = React.useCallback(
     (e) => {
-      setResultMembers(
-        members.filter((member) => member.email.includes(e.target.value))
-      );
+      const temp = members.filter((member) => {
+        console.log(roles);
+        if (roles) {
+          return (
+            member.email?.includes(e.target.value) &&
+            !roles.includes(member.email)
+          );
+        }
+        else {
+          return member.email?.includes(e.target.value);
+        }
+      });
+      console.log(temp);
+      setResultMembers(temp);
     },
     [members]
   );
@@ -416,7 +428,12 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
           })
           .then((res) => {
             GetRolesMember();
-            console.log(res.data.message);
+            notify("Role Updated");
+            console.log("Role Updated");
+          })
+          .catch(() => {
+            notify("Role Taken");
+            console.log("Role Taken");
           });
       };
     },
@@ -426,7 +443,6 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
   const AdminDeleteRoleUser = React.useCallback(
     (index, role) => {
       return () => {
-        console.log(index);
         axios
           .delete("/api/dashboard/role", {
             data: {
@@ -436,9 +452,9 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
             },
           })
           .then((res) => {
-            console.log(res.data.message);
             if (res.data.success) {
               GetRolesMember();
+              notify("Updated");
             }
           })
           .catch((err) => {
@@ -624,16 +640,19 @@ export const Manage = () => {
       });
   }, [Signout]);
 
-  const templateManage = React.useCallback((id) => {
-    axios
-      .get(`/api/dashboard/manage/${id}`)
-      .then((res) => {
-        setManageTemplate(res.data.data.layout);
-        setManageTemplateName(res.data.data.name);
-        setManageTemplateId(res.data.data.id);
-      })
-      .catch(()=>Signout());
-  }, [Signout]);
+  const templateManage = React.useCallback(
+    (id) => {
+      axios
+        .get(`/api/dashboard/manage/${id}`)
+        .then((res) => {
+          setManageTemplate(res.data.data.layout);
+          setManageTemplateName(res.data.data.name);
+          setManageTemplateId(res.data.data.id);
+        })
+        .catch(() => Signout());
+    },
+    [Signout]
+  );
 
   return (
     <div>
@@ -726,7 +745,7 @@ export const Manage = () => {
           <div className="sticky top-8 bg-blue-700 rounded p-4 mb-2">
             <div>
               <span className="font-semibold">Users</span>
-              <Popup manageTemplateId={manageTemplateId} />
+              <Popup />
             </div>
           </div>
         </div>

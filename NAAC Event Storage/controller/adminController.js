@@ -201,20 +201,18 @@ const AdminGetDashboard = async (req, res, next) => {
 
 const AdminPostData = (req, res, next) => {
   try {
+    const { name, data, templateID } = req.body;
     Template.findOne({
-      _id: req.body.templateID,
+      _id: templateID,
     }).then((template) => {
+      console.log(template);
       if (template !== null) {
-        template.layout = req.body.data;
-        template.name = req.body.name;
+        template.layout = data;
+        template.name = name;
         template.save().then((template) => {
           res.status(200).send({
             message: "Template Updated",
           });
-        });
-      } else {
-        res.status(404).send({
-          message: "Something went Wrong",
         });
       }
     });
@@ -347,7 +345,6 @@ const AdminPostDashboardActiveTemplate = async (req, res, next) => {
 const AdminGetUser = async (req, res, next) => {
   try {
     await Member.find({}).then((members) => {
-      console.log("members");
       res.status(200).send({
         message: "Users Found",
         user: members,
@@ -391,43 +388,75 @@ const AdminPostUser = async (req, res, next) => {
 
 const AdminDeleteUser = async (req, res, next) => {
   try {
-    const { email, template_id } = req.body;
+    const { email } = req.body;
 
     await Member.findOneAndDelete({
       email: email,
     }).then(async (member) => {
-      await Template.findById({
-        _id: template_id,
-      })
-        .then((template) => {
-          const temp = template.handle.role;
-          if (Object.keys(template.handle.role).includes(email)) {
-            const index = temp[email][0];
-            const expand =
-              template.handle.indexRole[index] === undefined
-                ? []
-                : template.handle.indexRole[index].filter((e) => e !== email);
-            template.handle.indexRole = {
-              ...template.handle.indexRole,
-              [index]: [...expand],
-            };
-            delete temp[email];
-          }
-          template.handle.role = { ...temp };
-          template.markModified("handle.role");
-
-          template.save().then(() => {
-            res.status(200).send({
-              message: "User Deleted",
-              success: true,
+      if (member !== null) {
+        await User.findById(member.ParentId).then(async (user) => {
+          console.log(user.template.length);
+          for (i in user.template) {
+            await Template.exists({
+              _id: user.template[i],
+            }).then(async () => {
+              await Template.findById(user.template[i]).then((template) => {
+                if (template.isActive === false) {
+                  if (Object.keys(template.handle.role).includes(email)) {
+                    for (role of template.handle.role[email]) {
+                      let index =
+                        template.handle.indexRole[role].indexOf(email);
+                      console.log(template.handle.indexRole[role][index]);
+                      delete template.handle.indexRole[role][index];
+                    }
+                  }
+                  delete template.handle.role[email];
+                  template.markModified("handle.role");
+                  template.markModified("handle.indexRole");
+                  template.save();
+                }
+              });
             });
-          });
-        })
-        .catch((err) => {
-          throw new Error("Internal Server Error");
+          }
         });
+        res.status(200).send({
+          message: "User Deleted",
+          success: true,
+        });
+        // await Template.findById({
+        //   _id: template_id,
+        // })
+        //   .then((template) => {
+        //     const temp = template.handle.role;
+        //     if (Object.keys(template.handle.role).includes(email)) {
+        //       const index = temp[email][0];
+        //       const expand =
+        //         template.handle.indexRole[index] === undefined
+        //           ? []
+        //           : template.handle.indexRole[index].filter((e) => e !== email);
+        //       template.handle.indexRole = {
+        //         ...template.handle.indexRole,
+        //         [index]: [...expand],
+        //       };
+        //       delete temp[email];
+        //     }
+        //     template.handle.role = { ...temp };
+        //     template.markModified("handle.role");
+
+        //     template.save().then(() => {
+        //       res.status(200).send({
+        //         message: "User Deleted",
+        //         success: true,
+        //       });
+        //     });
+        //   })
+        //   .catch((err) => {
+        //     throw new Error("Internal Server Error");
+        //   });
+      }
     });
   } catch (error) {
+    console.log(error);
     res.status(500).send({
       message: error.message,
       success: false,
@@ -597,10 +626,11 @@ const AdminDeleteRoleUser = async (req, res, next) => {
 
 const ClientPostLogin = async (req, res, next) => {
   //otp generation part and model saving
-  const { email } = req.body;
 
   try {
+    const { email } = req.body;
     await Member.findOne({ email }).then(async (member) => {
+      console.log(email);
       if (member !== null) {
         const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
 
@@ -807,15 +837,23 @@ const ClientPostLogout = async (req, res, next) => {
     await Member.findById({
       _id: id,
     }).then((member) => {
-      member.active = false;
-      member.save().then(() => {
-        res.status(200).send({
-          message: "Logged Out",
-          success: true,
+      if (member !== null) {
+        member.active = false;
+        member.save().then(() => {
+          res.status(200).send({
+            message: "Logged Out",
+            success: true,
+          });
         });
-      });
+      } else {
+        res.status(200).send({
+          success: true,
+          message: "Logged Out",
+        });
+      }
     });
   } catch (error) {
+    console.log(error);
     res.status(500).send({
       status: false,
       message: error.message,
@@ -835,7 +873,12 @@ const ClientGetDashboard = async (req, res, next) => {
           })
           .exec();
         const temp = user_member.template
-          ?.filter((e) => !e.isComplete && e.islive)
+          ?.filter(
+            (e) =>
+              !e.isComplete &&
+              e.islive &&
+              Object.keys(e.handle.role).includes(req.email)
+          )
           .map((e, i) => {
             return {
               name: e.name,
@@ -871,18 +914,20 @@ const ClientPostDashboard = async (req, res, next) => {
         const range = Array(limits[1] - limits[0] + 1)
           .fill()
           .map((_, idx) => limits[0] + idx);
+
+        const template = {
+          layout: layout.map((e, i) => {
+            return {
+              ...e,
+              index: range[i],
+            };
+          }),
+          name: t.name,
+        }
         res.status(200).send({
           message: "Success",
           success: true,
-          template: {
-            layout: layout.map((e, i) => {
-              return {
-                ...e,
-                index: range[i],
-              };
-            }),
-            name: t.name,
-          },
+          template: template,
         });
       } else {
         throw new Error("Something Went Wrong !");

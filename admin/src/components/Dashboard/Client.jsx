@@ -126,7 +126,7 @@ export const FillClient = () => {
   //   })
   //   .filter((e) => e !== undefined);
 
-  // console.log(items());
+  console.log(template);
   return (
     // <Scrollspy sectionRefs={sectionRefs}>
     //   {({ currentElementIndexInViewport }) => (
@@ -170,7 +170,7 @@ export const FillClient = () => {
                 items={items()}
                 currentClassName="font-bold border-slate-100"
               > */}
-            {template &&
+            {template.layout &&
               // eslint-disable-next-line array-callback-return
               template.layout.map((e, i) => {
                 if (e.type === "section") {

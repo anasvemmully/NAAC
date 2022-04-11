@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import axios from "axios";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
@@ -19,6 +20,8 @@ const Userlogin = () => {
 
   const ClientPostLogin = React.useCallback(
     (e) => {
+      console.log("userLogin.email");
+      console.log(userLogin.email);
       e.preventDefault();
       axios
         .post(`/api/d/login`, {
@@ -26,6 +29,7 @@ const Userlogin = () => {
         })
         .then((res) => {
           if (res.data.success) {
+
             setUserLogin({
               email: res.data.email,
               otp: "",
@@ -42,7 +46,7 @@ const Userlogin = () => {
           }
         });
     },
-    [notify, userLogin]
+    [notify,userLogin.email]
   );
 
   const ClientOTPGetVerification = React.useCallback(
@@ -105,10 +109,7 @@ const Userlogin = () => {
 
   return (
     <div className="flex w-screen	h-screen justify-center items-center bg-slate-100">
-      <form
-        onSubmit={ClientPostLogin}
-        className="bg-slate-500 px-8 py-8 rounded-lg text-white"
-      >
+      <form className="bg-slate-500 px-8 py-8 rounded-lg text-white">
         {userLogin.emailok ? (
           <div>
             <h1 className="font-bold text-2xl">Enter OTP</h1>
@@ -133,7 +134,12 @@ const Userlogin = () => {
             </button>
 
             <div className="mt-6">
-              <button className="text-white bg-blue-600 hover:bg-[#4285F4]/90 focus:ring-4 focus:outline-none focus:ring-[#4285F4]/50 font-medium rounded-lg text-sm px-5 py-2.5  mr-2 mb-2" onClick={ClientPostResendOTP}>Resend OTP</button>
+              <button
+                className="text-white bg-blue-600 hover:bg-[#4285F4]/90 focus:ring-4 focus:outline-none focus:ring-[#4285F4]/50 font-medium rounded-lg text-sm px-5 py-2.5  mr-2 mb-2"
+                onClick={ClientPostResendOTP}
+              >
+                Resend OTP
+              </button>
               <div className="flex gap-1">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -207,6 +213,7 @@ const Userlogin = () => {
               <button
                 className="text-white bg-blue-600 hover:bg-[#4285F4]/90 focus:ring-4 focus:outline-none focus:ring-[#4285F4]/50 font-medium rounded-lg text-sm px-5 py-2.5  mr-2 mb-2"
                 type="submit"
+                onClick={ClientPostLogin}
               >
                 Accept
               </button>

@@ -4,6 +4,7 @@ function AuthenticateAdmin(req,res,next){
         next();
     }
     else{
+        console.log("you are not authenticated");
         res.status(403).send({
             message : "You are not authorized to access this page", 
             isAuthenticated : req.isAuthenticated()
