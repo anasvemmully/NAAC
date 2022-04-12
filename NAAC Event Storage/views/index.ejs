@@ -1,11 +1,129 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= data %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <title><% if(template) { %> <%= template.name %> <%} %></title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.css"
+      integrity="sha512-vA/fpEI8+rrDsPceGG+Rz4NBhaNE4lvJ8CrNfspqDQi6uyIs82Hwr8gm/E+SRs+ZKjJ2ihOdb6esDSAuJrWOhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
   </head>
+
   <body>
-    <h1><%= data %></h1>
-    <p>Welcome to <%= data %></p>
+    <div class="grid place-items-center h-screen">
+      <div class="w-3/4">
+        <% if (template) { %> <% template.layout.forEach((e,index)=>{ %> <% if
+        (e.type==="section" ) { %>
+        <div
+          class="font-bold text-xl my-2"
+          style="margin-left: <%= `${e.level}rem` %>;"
+        >
+          <%= e.title %>
+        </div>
+        <% } else { %>
+        <div
+          class="py-2 px-4 text-normal my-2 bg-gray-200 rounded"
+          style="margin-left:<%= `${e.level}rem` %>"
+        >
+          <div><%= e.title %></div>
+          <div class="flex mt-6">
+            <% if ( Object.keys(template.handle.publish).includes(index.toString()) === true ){ %>
+                <% for(i of Object.keys(template.handle.publish[index])) { %>
+                  <% if(i === "image") { %>
+                    <% if(template.handle.publish[index][i].path) { %>
+                    <button class="" onclick="download(<%= `'${template._id}'` %> , <%= `'${template.handle.publish[index][i].file_name}'` %> , <%= `'${template.handle.publish[index][i].path}'` %> , <%= `'${template.handle.publish[index][i].name}'` %> )()">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                    <% } %>
+                  <% } %>
+                  <% if(i === "pdf") { %>
+                    <% if(template.handle.publish[index][i].path) { %>
+
+                    <button class="" onclick="download(<%= `'${template._id}'` %> , <%= `'${template.handle.publish[index][i].file_name}'` %> , <%= `'${template.handle.publish[index][i].path}'` %> , <%= `'${template.handle.publish[index][i].name}'` %> )()">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                    <% } %>
+
+                  <% } %>
+                  <% if(i === "excel") { %>
+                    <% if(template.handle.publish[index][i].path) { %>
+
+                    <button class="" onclick="download(<%= `'${template._id}'` %> , <%= `'${template.handle.publish[index][i].file_name}'` %> , <%= `'${template.handle.publish[index][i].path}'` %> , <%= `'${template.handle.publish[index][i].name}'` %> )()">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                    <% } %>
+
+                  <% } %>
+                  <% if(i === "text") { %>
+                    <% if(template.handle.publish[index][i].path) { %>
+
+                    <button onclick="download(<%= `'${template._id}'` %> , <%= `'${template.handle.publish[index][i].file_name}'` %> , <%= `'${template.handle.publish[index][i].path}'` %> , <%= `'${template.handle.publish[index][i].name}'` %> )()" class="">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                    <% } %>
+
+                  <% } %>
+                  <% if(i === "web") { %>
+                    <% if(template.handle.publish[index][i].path) { %>
+
+                    <button onclick="download(<%= `'${template._id}'` %> , <%= `'${template.handle.publish[index][i].file_name}'` %> , <%= `'${template.handle.publish[index][i].path}'` %> , <%= `'${template.handle.publish[index][i].name}'` %> )()" class="">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                    <% } %>
+
+                  <% } %>
+                <% } %>       
+            <% } %>
+          </div>
+        </div>
+        <% } %> <% }) %>
+      </div>
+
+      <% } %>
+    </div>
+    <script>
+      function download(templateid , file_name , path , name){
+        return () => {
+          const body = {
+            templateid : templateid,
+            file : {
+              path : path,
+              file_name : file_name
+            }
+          }
+
+          fetch("/view/download", {
+          method: "POST",
+          body: JSON.stringify(body),
+          headers: {"Content-type": "application/json; charset=UTF-8"}
+        })
+          .then((res) =>res.blob())
+          .then((blob)=>{
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = name;
+            document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+            a.click();    
+            a.remove();
+          })
+          .catch((err)=>{
+            console.log(err);
+          });
+        }
+      }
+    </script>
   </body>
 </html>

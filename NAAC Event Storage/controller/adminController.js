@@ -55,7 +55,6 @@ const AdminRegisterPost = (req, res, next) => {
   try {
     const { username, email, password1, password2 } = req.body;
 
-    console.log(req.body);
     if (password1 !== password2) {
       res.render("admin/register", {
         title: "Register",
@@ -205,7 +204,6 @@ const AdminPostData = (req, res, next) => {
     Template.findOne({
       _id: templateID,
     }).then((template) => {
-      console.log(template);
       if (template !== null) {
         template.layout = data;
         template.name = name;
@@ -324,7 +322,6 @@ const AdminPostDashboardActiveTemplate = async (req, res, next) => {
             }
           })
           .catch((err) => {
-            console.log(err);
             res.status(500).send({
               message: "Internal Server Error",
             });
@@ -395,7 +392,6 @@ const AdminDeleteUser = async (req, res, next) => {
     }).then(async (member) => {
       if (member !== null) {
         await User.findById(member.ParentId).then(async (user) => {
-          console.log(user.template.length);
           for (i in user.template) {
             await Template.exists({
               _id: user.template[i],
@@ -406,7 +402,6 @@ const AdminDeleteUser = async (req, res, next) => {
                     for (role of template.handle.role[email]) {
                       let index =
                         template.handle.indexRole[role].indexOf(email);
-                      console.log(template.handle.indexRole[role][index]);
                       delete template.handle.indexRole[role][index];
                     }
                   }
@@ -456,7 +451,6 @@ const AdminDeleteUser = async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       message: error.message,
       success: false,
@@ -630,7 +624,6 @@ const ClientPostLogin = async (req, res, next) => {
   try {
     const { email } = req.body;
     await Member.findOne({ email }).then(async (member) => {
-      console.log(email);
       if (member !== null) {
         const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
 
@@ -662,7 +655,6 @@ const ClientPostLogin = async (req, res, next) => {
             if (error) {
               throw new Error("Email sending failed");
             } else {
-              console.log("Email sent: " + info.response);
               res.status(200).send({
                 message: "OTP Sent",
                 success: true,
@@ -800,9 +792,7 @@ const ClientPostResendOTP = async (req, res, next) => {
           otpModel.save().then(() => {
             transporter.sendMail(options, function (error, info) {
               if (error) {
-                console.log(error);
               } else {
-                console.log("Email sent: " + info.response);
               }
             });
             res.status(200).send({
@@ -853,7 +843,6 @@ const ClientPostLogout = async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       status: false,
       message: error.message,
@@ -923,7 +912,7 @@ const ClientPostDashboard = async (req, res, next) => {
             };
           }),
           name: t.name,
-        }
+        };
         res.status(200).send({
           message: "Success",
           success: true,
@@ -934,7 +923,6 @@ const ClientPostDashboard = async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.log("inside ClientPostDashboard");
     res.status(500).send({
       status: false,
       message: error.message,
@@ -999,11 +987,9 @@ const ClientPostUploadFile = async (req, res, next) => {
             if (fs.existsSync(t.handle.publish[index][type].path)) {
               fs.unlinkSync(t.handle.publish[index][type].path);
             }
-            console.log("file not existed");
             const file = req.files.file;
             const file_name = `${uuidv4()}.${file.name.split(".").pop()}`;
             const path = `./uploads/${file_name}`;
-            console.log(path);
             file.mv(path, async (err) => {
               if (err) {
                 throw new Error("something went wrong !");
@@ -1016,7 +1002,6 @@ const ClientPostUploadFile = async (req, res, next) => {
                   };
                   t.markModified("handle.publish");
                   t.save().then((t) => {
-                    console.log(t.handle.publish[index][type]);
                     res.status(200).send({
                       message: "File Uploaded Successfully",
                       success: true,
@@ -1037,7 +1022,6 @@ const ClientPostUploadFile = async (req, res, next) => {
         };
         t.markModified("handle.publish");
         t.save().then((t) => {
-          console.log(t.handle.publish[index][type]);
           res.status(200).send({
             message: "Web Link Updated Successfully",
             success: true,
@@ -1046,7 +1030,6 @@ const ClientPostUploadFile = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       success: false,
       message: error.message,
@@ -1073,7 +1056,6 @@ const ClientGetDownloadFile = async (req, res, next) => {
               if (err) {
                 next(err);
               } else {
-                console.log("Sent:", file.file_name);
               }
             }
           );
@@ -1098,7 +1080,6 @@ const ClientPostFileInfo = async (req, res, next) => {
 
     await Template.findById(templateid).then((t) => {
       if (t) {
-        console.log(t);
         if (file_type === "web") {
           file_name = t.handle.publish[index][file_type].web;
         } else {
@@ -1139,7 +1120,6 @@ const AdminPostDashboardView = async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.log("inside ClientPostDashboard");
     res.status(500).send({
       status: false,
       message: error.message,
@@ -1180,7 +1160,6 @@ const AdminPostUploadFile = async (req, res, next) => {
     var { templateid, index, file_type, webLink } = JSON.parse(req.body.misc);
     if (file_type && file_type !== "web") {
       var type = "";
-      // console.log("WORKING ON IT!!!");
 
       if (!req.files) {
         throw new Error("No file uploaded");
@@ -1230,21 +1209,17 @@ const AdminPostUploadFile = async (req, res, next) => {
 
         await Template.findById(templateid).then((t) => {
           if (t) {
-            // console.log(t);
             if (fs.existsSync(t.handle.publish[index][type].path)) {
               fs.unlinkSync(t.handle.publish[index][type].path);
             }
-            console.log("file not existed");
             const file = req.files.file;
             const file_name = `${uuidv4()}.${file.name.split(".").pop()}`;
             const path = `./uploads/${file_name}`;
-            console.log(path);
             file.mv(path, async (err) => {
               if (err) {
                 throw new Error("something went wrong !");
               } else {
                 if (t) {
-                  console.log(t.handle);
                   t.handle.publish[index][type] = {
                     path: path,
                     file_name: file_name,
@@ -1252,7 +1227,6 @@ const AdminPostUploadFile = async (req, res, next) => {
                   };
                   t.markModified("handle.publish");
                   t.save().then((t) => {
-                    console.log(t.handle.publish[index][type]);
                     res.status(200).send({
                       message: "File Uploaded Successfully",
                       success: true,
@@ -1273,7 +1247,6 @@ const AdminPostUploadFile = async (req, res, next) => {
         };
         t.markModified("handle.publish");
         t.save().then((t) => {
-          console.log(t.handle.publish[index][type]);
           res.status(200).send({
             message: "Web Link Updated Successfully",
             success: true,
@@ -1285,6 +1258,91 @@ const AdminPostUploadFile = async (req, res, next) => {
     res.status(500).send({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+const AdminDeleteForm = async (req, res, next) => {
+  try {
+    const { id } = req.body;
+
+    await Template.findById(id).then((m) => {
+      if (m) {
+        for (i of Object.values(m.handle.publish)) {
+          for (j of Object.values(i)) {
+            if (Object.keys(j).length !== 0) {
+              if (fs.existsSync(j.path)) {
+                fs.unlinkSync(j.path);
+              }
+            }
+          }
+        }
+        User.findById({ _id: req.user._id }).then((user) => {
+          let tmp = user.template;
+          let index = tmp.indexOf(id);
+          user.template = [...tmp.slice(0, index), ...tmp.slice(index + 1)];
+          user.markModified("template");
+          user.save().then(() => {
+            res.status(200).send({
+              message: "Success",
+              success: true,
+            });
+          });
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Something Went Wrong",
+    });
+  }
+};
+
+const AdminCompletePostForm = async (req, res, next) => {
+  try {
+    const { id } = req.body;
+
+    await Template.findById(id).then((t) => {
+      if (t) {
+        if (t.islive === true && t.isActive === false) {
+          t.isComplete = !t.isComplete;
+          t.save().then((t) => {
+            res.status(200).send({
+              message: "Success",
+              success: true,
+            });
+          });
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Something Went Wrong",
+    });
+  }
+};
+
+const AdminCompleteGetForm = async (req, res, next) => {
+  try {
+    const { id } = req.query;
+    await Template.findById(id).then((t) => {
+      if (t) {
+        if (t.islive === true && t.isActive === false) {
+          t.save().then((t) => {
+            res.status(200).send({
+              check: t.isComplete,
+              success: true,
+            });
+          });
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Something Went Wrong",
     });
   }
 };
@@ -1306,6 +1364,9 @@ module.exports = {
   AdminPostRoleUser,
   AdminPostRoleUserGet,
   AdminDeleteRoleUser,
+  AdminDeleteForm,
+  AdminCompletePostForm,
+  AdminCompleteGetForm,
 
   AdminPostDashboardView,
   AdminPostFileInfo,
