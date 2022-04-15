@@ -15,7 +15,7 @@ export const View = () => {
   const { ViewId } = useParams();
 
   useEffect(() => {
-    axios.post("/api/dashboard/view", { templateid: ViewId }).then((res) => {
+    axios.post(`/api/dashboard/view`, { templateid: ViewId }).then((res) => {
       if (res.data.success) {
         setTemplate(res.data.template);
       } else {
@@ -381,7 +381,7 @@ const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
 
   useEffect(() => {
     axios
-      .post("/api/dashboard/file", {
+      .post(`/api/dashboard/file`, {
         templateid: ViewId,
         index: index,
         file_type: file_type,
@@ -410,7 +410,7 @@ const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
 
       if (file) {
         axios
-          .post("/api/dashboard/upload-file", data, {
+          .post(`/api/dashboard/upload-file`, data, {
             headers: {
               // "Content-Type": "multipart/form-data",
               "Content-Type": "application/octet-stream",
@@ -431,7 +431,7 @@ const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
   );
   const DownloadFile = React.useCallback(() => {
     axios
-      .get("/api/d/download/", {
+      .get(`/api/d/download/`, {
         params: {
           templateid: ViewId,
           index: index,
@@ -460,7 +460,7 @@ const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
           webLink: webLink,
         };
         axios
-          .post("/api/dashboard/upload-file", {
+          .post(`/api/dashboard/upload-file`, {
             misc: JSON.stringify(misc),
           })
           .then((res) => {

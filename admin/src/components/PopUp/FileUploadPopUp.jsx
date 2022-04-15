@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-useless-escape */
 /* eslint-disable jsx-a11y/alt-text */
 import axios from "axios";
@@ -119,7 +120,7 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
 
   useEffect(() => {
     axios
-      .post("/api/d/file", {
+      .post(`/api/d/file`, {
         templateid: templateid,
         index: index,
         file_type: file_type,
@@ -148,7 +149,7 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
 
       if (file) {
         axios
-          .post("/api/d/upload/", data, {
+          .post(`/api/d/upload/`, data, {
             headers: {
               // "Content-Type": "multipart/form-data",
               "Content-Type": "application/octet-stream",
@@ -158,10 +159,10 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
             if (res.data.success) {
               setPopUp2(false);
               notify(res.data.message)();
-            } else {
-              notify(res.data.message)();
-              Signout();
             }
+          })
+          .catch(() => {
+            notify("File is too Big !","error")();
           });
       }
     },
@@ -169,7 +170,7 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
   );
   const DownloadFile = React.useCallback(() => {
     axios
-      .get("/api/d/download/", {
+      .get(`/api/d/download/`, {
         params: {
           templateid: templateid,
           index: index,
@@ -191,7 +192,7 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
         )
       ) {
         axios
-          .post("/api/d/upload/", {
+          .post(`/api/d/upload/`, {
             misc: JSON.stringify({
               templateid: templateid,
               index: index,

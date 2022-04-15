@@ -8,7 +8,7 @@ import {
 import { Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import React from "react";
-import { toast , Slide } from "react-toastify";
+import { toast, Slide } from "react-toastify";
 
 export const ClientContext = createContext();
 
@@ -26,23 +26,36 @@ export const ClientProvider = ({ children }) => {
   const naviagate = useNavigate();
   // const [error, setError] = useState(null);
   // const [message, setMessage] = useState(null);
-
-  const notify = (message) => {
+  const notify = (message, type = "success") => {
     return function () {
       if (!toast.isActive(toastId.current)) {
-        toastId.current = toast.success(message, {
-          position: "top-right",
-          transition: Slide,
-          autoClose: 1000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-        });
+        if (type === "success") {
+          toastId.current = toast.success(message, {
+            position: "top-right",
+            transition: Slide,
+            autoClose: 1000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: true,
+            progress: undefined,
+          });
+        } else if (type === "error") {
+          toastId.current = toast.error(message, {
+            position: "top-right",
+            transition: Slide,
+            autoClose: 1000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: true,
+            progress: undefined,
+          });
+        }
       }
     };
   };
+
   useEffect(() => {
     const user = localStorage.getItem("U3/r");
     if (user) {
@@ -57,7 +70,7 @@ export const ClientProvider = ({ children }) => {
       email: "",
     });
     axios
-      .post("/api/d/logout", {
+      .post(`/api/d/logout `, {
         id: user.Us341D,
       })
       .then((res) => {
@@ -71,8 +84,6 @@ export const ClientProvider = ({ children }) => {
         console.log(err);
       });
   }, [naviagate, user.Us341D]);
-
-  
 
   const value = {
     notify,

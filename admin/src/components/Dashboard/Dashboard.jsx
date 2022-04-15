@@ -4,6 +4,10 @@ import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { Outlet, NavLink, Link } from "react-router-dom";
 import { AuthContext } from "../../authentication/Auth";
+import { ClientContext } from "../../authentication/ClientAuth";
+
+import { PopUpFormManage } from "../PopUp/PopUpFormManage";
+
 import { Tree } from "./Tree";
 
 import { toast } from "react-toastify";
@@ -13,22 +17,52 @@ import { toast } from "react-toastify";
 toast.configure();
 
 export const Dashboard = () => {
-  const { Signout } = useContext(AuthContext);
+  const { Signout , user } = useContext(AuthContext);
   const [templates, setTemplates] = useState(null);
+  const { notify } = useContext(ClientContext);
 
-  useEffect(() => {
+  const GetTemplates = React.useCallback(() => {
+    // console.log(process.env.REACT_APP_PUBLIC_URL);
+    console.log(user);
     axios
-      .get("/api/dashboard")
+      .get(`/api/dashboard`)
       .then((res) => {
+        console.log("working getting to dashboard");
         if (res.data.isAuthenticated) Signout();
         else {
           setTemplates(res.data.Template);
         }
       })
       .catch((err) => {
+        console.log(err);
         Signout();
       });
-  }, [Signout]);
+  }, []);
+
+  const DeleteForm = (id, ref, match) => {
+    console.log("DeleteForm");
+    return () => {
+      if (ref.value === match) {
+        axios
+          .post(`/api/dashboard/delete-form`, { id: id })
+          .then((res) => {
+            if (res.data.success) {
+              GetTemplates();
+              notify("Form Deleted")();
+            }
+          })
+          .catch(() => {
+            notify("Something Went Wrong")();
+          });
+      } else {
+        notify("Expression not matched !", "error")();
+      }
+    };
+  };
+
+  useEffect(() => {
+    GetTemplates();
+  }, []);
 
   return (
     <>
@@ -89,28 +123,67 @@ export const Dashboard = () => {
               .filter((e) => e.islive === true && e.isActive === false)
               .map((e, index) => {
                 return (
-                  <div
+                  <Form
                     key={index}
-                    className="bg-slate-50 p-4 rounded group"
-                    // onClick={(e) => console.log(e)}
-                  >
-                    <Link
-                      to={`/admin/dashboard/view/${e._id}`}
-                      className="group-hover:border-blue-500 group-hover:border-solid px-10 py-6 flex flex-col items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-base "
-                    >
-                      <div key={index}>
-                        <div>
-                          <div className="font-semibold">{e.name}</div>
-                          <div className="text-xs">{e.updatedAt}</div>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
+                    index={index}
+                    id={e._id}
+                    name={e.name}
+                    DeleteForm={DeleteForm}
+                  />
                 );
               })}
         </div>
       </div>
     </>
+  );
+};
+
+const Form = (props) => {
+  const { index, id, name, DeleteForm } = props;
+
+  const [ispopup, setIsPopUp] = useState(false);
+
+  return (
+    <div className="bg-slate-50 p-4 rounded">
+      <div className="flex flex-row gap-2 justify-between">
+        <Link
+          to={`/admin/dashboard/view/${id}`}
+          className="grow hover:border-blue-500 hover:border-solid px-10 py-6 items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-base "
+        >
+          <div key={index}>
+            <div>
+              <div className="font-semibold">{name}</div>
+            </div>
+          </div>
+        </Link>
+        <div
+          onClick={() => {
+            setIsPopUp(!ispopup);
+          }}
+          className="cursor-pointer flex group hover:border-red-500 hover:border-solid p-2 items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-base"
+        >
+          <button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 group-hover:text-red-700"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      {ispopup && (
+        <PopUpFormManage
+          setIsPopUp={setIsPopUp}
+          DeleteForm={DeleteForm}
+          ispopup={ispopup}
+          name={name}
+          id={id}
+        />
+      )}
+    </div>
   );
 };
 
@@ -193,7 +266,7 @@ const Popup = ({ manageTemplateId }) => {
 
   const GetUserMember = React.useCallback(() => {
     axios
-      .get("/api/user")
+      .get(`/api/user`)
       .then((res) => {
         setMembers(res.data.user);
       })
@@ -204,7 +277,7 @@ const Popup = ({ manageTemplateId }) => {
 
   const AddUserMember = React.useCallback(() => {
     axios
-      .post("/api/user", {
+      .post(`/api/user`, {
         userAdd: add,
       })
       .then((res) => {
@@ -225,7 +298,7 @@ const Popup = ({ manageTemplateId }) => {
     (e) => {
       return () => {
         axios
-          .delete("/api/user/", {
+          .delete(`/api/user/`, {
             data: { email: e.email },
           })
           .then((res) => {
@@ -364,7 +437,7 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
 
   const GetRolesMember = React.useCallback(async () => {
     await axios
-      .post("/api/dashboard/get-role", {
+      .post(`/api/dashboard/get-role`, {
         id: manageTemplateId,
         index: index,
       })
@@ -378,7 +451,7 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
 
   const GetUserMember = React.useCallback(async () => {
     await axios
-      .get("/api/user")
+      .get(`/api/user`)
       .then((res) => {
         setMembers(res.data.user);
       })
@@ -396,8 +469,7 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
             member.email?.includes(e.target.value) &&
             !roles.includes(member.email)
           );
-        }
-        else {
+        } else {
           return member.email?.includes(e.target.value);
         }
       });
@@ -420,7 +492,7 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
           }
         }
         axios
-          .post("/api/dashboard/role", {
+          .post(`/api/dashboard/role`, {
             email: email,
             start: index,
             end: i,
@@ -444,7 +516,7 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
     (index, role) => {
       return () => {
         axios
-          .delete("/api/dashboard/role", {
+          .delete(`/api/dashboard/role`, {
             data: {
               id: manageTemplateId,
               index: index,
@@ -625,7 +697,7 @@ export const Manage = () => {
 
   useEffect(() => {
     axios
-      .get("/api/dashboard")
+      .get(`/api/dashboard`)
       .then((res) => {
         if (res.data.isAuthenticated) Signout();
         else {

@@ -18,7 +18,7 @@ export const DashboardClient = () => {
   const [SearchTemplate, setSearchTemplate] = useState([]);
 
   useEffect(() => {
-    axios.get("/api/d/dashboard").then((res) => {
+    axios.get(`/api/d/dashboard`).then((res) => {
       if (res.data.success) {
         console.log(res.data);
         setMemeberTemplate(res.data.template);
@@ -108,7 +108,7 @@ export const FillClient = () => {
   const { templateid } = useParams();
 
   useEffect(() => {
-    axios.post("/api/d/dashboard", { templateid: templateid }).then((res) => {
+    axios.post(`/api/d/dashboard`, { templateid: templateid }).then((res) => {
       console.log(res.data);
       if (res.data.success) {
         setTemplate(res.data.template);

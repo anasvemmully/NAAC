@@ -17,8 +17,9 @@ export default function AdminLogin() {
   const Loginhandler = (event) => {
     event.preventDefault();
     axios
-      .post("/api/login", AdminCredentials)
+      .post(`/api/login`, AdminCredentials)
       .then((response) => {
+        console.log(response.data);
         if (response.status === 200) {
           setError(null);
           let token = JSON.parse(atob(response.data.data));

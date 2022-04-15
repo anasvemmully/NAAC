@@ -1,5 +1,6 @@
 function AuthenticateAdmin(req,res,next){
     console.log("Authentication Middleware working fine");
+
     if(req.isAuthenticated() && req.user.role === "ADMIN"){
         next();
     }
@@ -9,7 +10,7 @@ function AuthenticateAdmin(req,res,next){
             message : "You are not authorized to access this page", 
             isAuthenticated : req.isAuthenticated()
         });
-        res.redirect('http://localhost:3000/admin/');
+        // res.redirect('http://localhost:3000/admin/');
     }
 }
 

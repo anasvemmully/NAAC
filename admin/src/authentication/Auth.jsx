@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const user = localStorage.getItem("user");
-    console.log(user);
+    // console.log(user);
     if (user) {
       setUser(JSON.parse(atob(user)));
     }
@@ -56,16 +56,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const Signout = () => {
-    setUser({
-      isAuthenticated: false,
-      isAdmin: false,
-      username: "",
-      email: "",
-    });
     axios
-      .post("/api/logout")
+      .post(`/api/logout`)
       .then((res) => {
         setMessage(res.data.message);
+        setUser({
+          isAuthenticated: false,
+          isAdmin: false,
+          username: "",
+          email: "",
+        });
         localStorage.removeItem("user");
       })
       .catch((err) => {

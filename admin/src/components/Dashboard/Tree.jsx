@@ -187,7 +187,7 @@ const TreeUpload = ({ scrollMeDown }) => {
         <button
           className="font-semibold rounded-md bg-red-500 text-white px-3 py-2"
           onClick={() => {
-            axios.post("/api/data", {
+            axios.post(`/api/data`, {
               name: templateName,
               data: treeData,
               templateID: templateID,

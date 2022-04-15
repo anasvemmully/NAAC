@@ -10,7 +10,7 @@ module.exports = (passport)=>{
             else if (!user) {
               return done(null, false, { message: 'Invalid Credentials.' });
             }
-            bcrypt.compare(password, user.password, function(err, res) {
+            bcrypt.compare(password, user.password, function (err, res) {
               if(res == true){
                 return done(null, user);
               }
