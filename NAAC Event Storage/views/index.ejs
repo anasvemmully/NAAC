@@ -9,11 +9,170 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
+    <style>
+      [tooltip] {
+        position: relative; /* opinion 1 */
+      }
+
+      /* Applies to all tooltips */
+      [tooltip]::before,
+      [tooltip]::after {
+        text-transform: none; /* opinion 2 */
+        font-size: .9em; /* opinion 3 */
+        line-height: 1;
+        user-select: none;
+        pointer-events: none;
+        position: absolute;
+        display: none;
+        opacity: 0;
+      }
+      [tooltip]::before {
+        content: '';
+        border: 5px solid transparent; /* opinion 4 */
+        z-index: 1001; /* absurdity 1 */
+      }
+      [tooltip]::after {
+        content: attr(tooltip); /* magic! */
+        
+        /* most of the rest of this is opinion */
+        font-family: Helvetica, sans-serif;
+        text-align: center;
+        
+        /* 
+          Let the content set the size of the tooltips 
+          but this will also keep them from being obnoxious
+          */
+        min-width: 3em;
+        max-width: 21em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 1ch 1.5ch;
+        border-radius: .3ch;
+        box-shadow: 0 1em 2em -.5em rgba(0, 0, 0, 0.35);
+        background: #333;
+        color: #fff;
+        z-index: 1000; /* absurdity 2 */
+      }
+
+      /* Make the tooltips respond to hover */
+      [tooltip]:hover::before,
+      [tooltip]:hover::after {
+        display: block;
+      }
+
+      /* don't show empty tooltips */
+      [tooltip='']::before,
+      [tooltip='']::after {
+        display: none !important;
+      }
+
+      /* FLOW: UP */
+      [tooltip]:not([flow])::before,
+      [tooltip][flow^="up"]::before {
+        bottom: 100%;
+        border-bottom-width: 0;
+        border-top-color: #333;
+      }
+      [tooltip]:not([flow])::after,
+      [tooltip][flow^="up"]::after {
+        bottom: calc(100% + 5px);
+      }
+      [tooltip]:not([flow])::before,
+      [tooltip]:not([flow])::after,
+      [tooltip][flow^="up"]::before,
+      [tooltip][flow^="up"]::after {
+        left: 50%;
+        transform: translate(-50%, -.5em);
+      }
+
+      /* FLOW: DOWN */
+      [tooltip][flow^="down"]::before {
+        top: 100%;
+        border-top-width: 0;
+        border-bottom-color: #333;
+      }
+      [tooltip][flow^="down"]::after {
+        top: calc(100% + 5px);
+      }
+      [tooltip][flow^="down"]::before,
+      [tooltip][flow^="down"]::after {
+        left: 50%;
+        transform: translate(-50%, .5em);
+      }
+
+      /* FLOW: LEFT */
+      [tooltip][flow^="left"]::before {
+        top: 50%;
+        border-right-width: 0;
+        border-left-color: #333;
+        left: calc(0em - 5px);
+        transform: translate(-.5em, -50%);
+      }
+      [tooltip][flow^="left"]::after {
+        top: 50%;
+        right: calc(100% + 5px);
+        transform: translate(-.5em, -50%);
+      }
+
+      /* FLOW: RIGHT */
+      [tooltip][flow^="right"]::before {
+        top: 50%;
+        border-left-width: 0;
+        border-right-color: #333;
+        right: calc(0em - 5px);
+        transform: translate(.5em, -50%);
+      }
+      [tooltip][flow^="right"]::after {
+        top: 50%;
+        left: calc(100% + 5px);
+        transform: translate(.5em, -50%);
+      }
+
+      /* KEYFRAMES */
+      @keyframes tooltips-vert {
+        to {
+          opacity: .9;
+          transform: translate(-50%, 0);
+        }
+      }
+
+      @keyframes tooltips-horz {
+        to {
+          opacity: .9;
+          transform: translate(0, -50%);
+        }
+      }
+
+      /* FX All The Things */ 
+      [tooltip]:not([flow]):hover::before,
+      [tooltip]:not([flow]):hover::after,
+      [tooltip][flow^="up"]:hover::before,
+      [tooltip][flow^="up"]:hover::after,
+      [tooltip][flow^="down"]:hover::before,
+      [tooltip][flow^="down"]:hover::after {
+        animation: tooltips-vert 300ms ease-out forwards;
+      }
+
+      [tooltip][flow^="left"]:hover::before,
+      [tooltip][flow^="left"]:hover::after,
+      [tooltip][flow^="right"]:hover::before,
+      [tooltip][flow^="right"]:hover::after {
+        animation: tooltips-horz 300ms ease-out forwards;
+      }
+      .tooltip {
+        display: inline-block;
+      }
+
+    </style>
   </head>
 
   <body>
     <div class="grid place-items-center h-screen">
-      <div class="w-3/4">
+      <div class="text-xl font-bold mt-12 p-6">
+        <% if(template) { %> <%= template.name %> <%} %>
+      </div>
+      <div class="pb-36 w-3/4">
         <% if (template) { %> <% template.layout.forEach((e,index)=>{ %> <% if
         (e.type==="section" ) { %>
         <div
@@ -28,7 +187,7 @@
           style="margin-left:<%= `${e.level}rem` %>"
         >
           <div><%= e.title %></div>
-          <div class="flex mt-6">
+          <div class="flex gap-3 mt-6">
             <% if ( Object.keys(template.handle.publish).includes(index.toString()) === true ){ %>
                 <% for(i of Object.keys(template.handle.publish[index])) { %>
                   <% if(i === "image") { %>
@@ -74,12 +233,13 @@
 
                   <% } %>
                   <% if(i === "web") { %>
-                    <% if(template.handle.publish[index][i].path) { %>
-
-                    <button onclick="download(<%= `'${template._id}'` %> , <%= `'${template.handle.publish[index][i].file_name}'` %> , <%= `'${template.handle.publish[index][i].path}'` %> , <%= `'${template.handle.publish[index][i].name}'` %> )()" class="">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clip-rule="evenodd" />
-                      </svg>
+                    <% if(template.handle.publish[index][i].web) { %>
+                      <button tooltip="Click to copy the link !" class="tooltip" onclick="copy(<%= `'${template.handle.publish[index][i].web}'` %>)" class="">
+                        
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clip-rule="evenodd" />
+                          </svg>
+                        
                     </button>
                     <% } %>
 
@@ -94,6 +254,23 @@
       <% } %>
     </div>
     <script>
+      function copy(string){
+        navigator
+        .clipboard
+        .writeText(string)
+        .then(
+          function () {
+            console.log(
+              "Copying to clipboard was successful!"
+            );
+          },
+          function (err) {
+            console.error("Could not copy text: ", err);
+          }
+        );
+      }
+
+
       function download(templateid , file_name , path , name){
         return () => {
           const body = {

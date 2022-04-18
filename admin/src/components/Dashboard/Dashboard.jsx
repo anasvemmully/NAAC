@@ -17,30 +17,25 @@ import { toast } from "react-toastify";
 toast.configure();
 
 export const Dashboard = () => {
-  const { Signout , user } = useContext(AuthContext);
+  const { Signout } = useContext(AuthContext);
   const [templates, setTemplates] = useState(null);
   const { notify } = useContext(ClientContext);
 
   const GetTemplates = React.useCallback(() => {
-    // console.log(process.env.REACT_APP_PUBLIC_URL);
-    console.log(user);
     axios
       .get(`/api/dashboard`)
       .then((res) => {
-        console.log("working getting to dashboard");
         if (res.data.isAuthenticated) Signout();
         else {
           setTemplates(res.data.Template);
         }
       })
       .catch((err) => {
-        console.log(err);
         Signout();
       });
   }, []);
 
   const DeleteForm = (id, ref, match) => {
-    console.log("DeleteForm");
     return () => {
       if (ref.value === match) {
         axios
@@ -67,8 +62,8 @@ export const Dashboard = () => {
   return (
     <>
       <div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-6 gap-4 mt-4 mb-8">
-          <div className="bg-slate-50 p-4 rounded group">
+        <div className="overflow-x-scroll sm:overflow-x-hidden pb-4 flex sm:flex-none sm:grid sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4 mt-4 mb-8">
+          <div className="bg-slate-50 p-3 rounded group ">
             <Link
               to="/admin/dashboard/create/000000000000000000000000"
               className="group-hover:border-blue-500 group-hover:border-solid px-10 py-6 flex flex-col items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-base "
@@ -93,21 +88,26 @@ export const Dashboard = () => {
         <div className="my-4 pl-4 text-white underline underline-offset-4">
           <span>Recent Work</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-6 gap-4 mt-4 mb-8">
+        <div className="overflow-x-scroll sm:overflow-x-hidden pb-4 flex sm:flex-none sm:grid sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4 mt-4 mb-8">
           {templates &&
             templates
               .filter((e) => e.islive === false && e.isActive === true)
               .map((e, index) => {
                 return (
-                  <div key={index} className="bg-slate-50 p-4 rounded group">
-                    <Link
-                      to={`/admin/dashboard/create/${e._id}`}
-                      className="group-hover:border-blue-500 group-hover:border-solid px-10 py-6 flex flex-col items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-base "
-                    >
-                      <span className="font-semibold text-slate-600 group-hover:text-blue-500">
-                        {e.name}
-                      </span>
-                    </Link>
+                  <div
+                    key={index}
+                    className="bg-slate-50 p-3 sm:p-4 rounded group"
+                  >
+                    <div>
+                      <Link
+                        to={`/admin/dashboard/create/${e._id}`}
+                        className="group-hover:border-blue-500 group-hover:border-solid px-10 py-6 py-auto flex items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-base"
+                      >
+                        <span className="font-semibold text-slate-600 group-hover:text-blue-500">
+                          {e.name}
+                        </span>
+                      </Link>
+                    </div>
                   </div>
                 );
               })}
@@ -117,7 +117,7 @@ export const Dashboard = () => {
         <div className="mt-4 pl-4 text-white underline underline-offset-4">
           <span>Published Forms</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-6 gap-4 mt-4 mb-8">
+        <div className="overflow-x-scroll sm:overflow-x-hidden pb-4 flex sm:flex-none sm:grid sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4 mt-4 mb-8">
           {templates &&
             templates
               .filter((e) => e.islive === true && e.isActive === false)
@@ -223,7 +223,7 @@ export const DashboardHeader = () => {
             </NavLink>
           </div>
           <div className="flex gap-x-12">
-            <div>
+            <div className="hidden sm:block">
               <span>Hi {user.username}</span>
             </div>
             <button onClick={Signout} className="px-3">
@@ -233,7 +233,7 @@ export const DashboardHeader = () => {
           </div>
         </div>
       </div>
-      <div className="px-12 py-8">
+      <div className="px-6 sm:px-12 pt-10 pb-16">
         <Outlet />
       </div>
     </div>
@@ -270,9 +270,7 @@ const Popup = ({ manageTemplateId }) => {
       .then((res) => {
         setMembers(res.data.user);
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => {});
   }, []);
 
   const AddUserMember = React.useCallback(() => {
@@ -328,7 +326,6 @@ const Popup = ({ manageTemplateId }) => {
   //     }
   //   };
   // };
-  // console.log(members);
 
   return (
     <div>
@@ -444,9 +441,7 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
       .then((res) => {
         setRoles(res.data.roles);
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => {});
   }, [index, manageTemplateId]);
 
   const GetUserMember = React.useCallback(async () => {
@@ -455,15 +450,12 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
       .then((res) => {
         setMembers(res.data.user);
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => {});
   }, []);
 
   const filterRoles = React.useCallback(
     (e) => {
       const temp = members.filter((member) => {
-        console.log(roles);
         if (roles) {
           return (
             member.email?.includes(e.target.value) &&
@@ -473,7 +465,6 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
           return member.email?.includes(e.target.value);
         }
       });
-      console.log(temp);
       setResultMembers(temp);
     },
     [members]
@@ -501,11 +492,9 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
           .then((res) => {
             GetRolesMember();
             notify("Role Updated");
-            console.log("Role Updated");
           })
           .catch(() => {
             notify("Role Taken");
-            console.log("Role Taken");
           });
       };
     },
@@ -529,9 +518,7 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
               notify("Updated");
             }
           })
-          .catch((err) => {
-            console.log(err);
-          });
+          .catch((err) => {});
       };
     },
     [GetRolesMember, manageTemplateId]
@@ -753,7 +740,7 @@ export const Manage = () => {
         </div>
       </div>
       <div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-6 gap-4 mt-10 mb-8">
+        <div className="overflow-x-scroll sm:overflow-x-hidden pb-4 flex sm:flex-none sm:grid sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4 mt-10 mb-8">
           {templates &&
             templates.map((e, index) => {
               return (
@@ -775,10 +762,10 @@ export const Manage = () => {
             })}
         </div>
       </div>
-      <div className="flex flex-row gap-x-8 text-white">
-        <div className="basis-8/12 border-r-2 border-white pr-8">
+      <div className="flex flex-col-reverse lg:flex-row gap-x-8 text-white">
+        <div className="basis-8/12 lg:border-r-2 lg:border-white lg:pr-6">
           {manageTemplateName && (
-            <div className="p-4">
+            <div className="p-1 pt-4 lg:p-4">
               <div className="font-semibold text-xl">{manageTemplateName}</div>
               <div className="flex py-1">
                 <svg

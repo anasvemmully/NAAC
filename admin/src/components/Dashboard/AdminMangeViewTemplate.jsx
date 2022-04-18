@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -34,10 +35,10 @@ export const View = () => {
 
   // console.log(items());
   return (
-    <div className="flex flex-row gap-x-8 text-white">
-      <div className="basis-8/12 border-r-2 border-white pr-8">
+    <div className="flex  flex-col-reverse lg:flex-row gap-x-8 text-white">
+      <div className="basis-8/12 lg:border-r-2 lg:border-white lg:pr-6">
         {template && (
-          <div className="p-4">
+          <div className="p-0 sm:p-4">
             <div className="font-semibold text-xl">{template.name}</div>
             <div className="flex py-1">
               <svg
@@ -56,7 +57,7 @@ export const View = () => {
             </div>
           </div>
         )}
-        <div className="pl-4 ">
+        <div className="pl-0 sm:pl-4">
           {/* scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-transparent scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded dark:scrollbar-track:!bg-slate-500/[0.16] dark:scrollbar-thumb:!bg-slate-500/50 max-h-96 supports-scrollbars:pr-2 lg:max-h-96 */}
           {template &&
             template.layout?.map((e, index) => (
@@ -70,30 +71,30 @@ export const View = () => {
             ))}
         </div>
       </div>
-      <div className="basis-4/12">
-        <div className="sticky top-8 rounded p-4 mb-2">
+      <div className="hidden lg:block basis-4/12">
+        <div className="sticky top-8 rounded p-4 mb-2 lg:mb-0">
           <div>
             <span className="font-semibold">Table of Contents : </span>
-                {template.layout &&
-                  // eslint-disable-next-line array-callback-return
-                  template?.layout.map((e, i) => {
-                    if (e.type === "section") {
-                      return (
-                        <li
-                          style={{
-                            marginLeft: `${e.level * 1.6}rem`,
-                          }}
-                          key={i}
-                          className="text-sm py-2 pl-5 border-l-2 border-slate-500 list-none"
-                        >
-                          <a href={`#section-${i}`}>
-                            {e.title.slice(0, 40) +
-                              (e.title.length > 40 ? "..." : "")}
-                          </a>
-                        </li>
-                      );
-                    }
-                  })}
+            {template.layout &&
+              // eslint-disable-next-line array-callback-return
+              template?.layout.map((e, i) => {
+                if (e.type === "section") {
+                  return (
+                    <li
+                      style={{
+                        marginLeft: `${e.level * 1.6}rem`,
+                      }}
+                      key={i}
+                      className="text-sm py-2 pl-5 border-l-2 border-slate-500 list-none"
+                    >
+                      <a href={`#section-${i}`}>
+                        {e.title.slice(0, 40) +
+                          (e.title.length > 40 ? "..." : "")}
+                      </a>
+                    </li>
+                  );
+                }
+              })}
           </div>
         </div>
       </div>
@@ -469,8 +470,10 @@ const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
               notify(res.data.message)();
             } else {
               notify(res.data.message)();
-              Signout();
             }
+          })
+          .catch(() => {
+            Signout();
           });
       } else {
         notify("Invalid URL !")();
@@ -478,6 +481,24 @@ const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
     },
     [Signout, ViewId, file_type, index, notify, setPopUp2, webLink]
   );
+
+  const DeleteFile = React.useCallback(() => {
+    axios
+      .post(`/api/dashboard/delete-file`, {
+        index: index,
+        type: file_type,
+        templateid: ViewId,
+      })
+      .then((res) => {
+        if (res.data.success) {
+          setPopUp2(false);
+          notify(res.data.message)();
+        }
+      })
+      .catch(() => {
+        Signout();
+      });
+  }, [ViewId, file_type, index]);
 
   const help = {
     // eslint-disable-next-line getter-return
@@ -605,6 +626,20 @@ const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
                       <span className="font-bold">
                         File uploaded : {fileInfo}
                       </span>
+                      <button className="ml-auto mr-2 text-red-400" onClick={DeleteFile}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-red-400">

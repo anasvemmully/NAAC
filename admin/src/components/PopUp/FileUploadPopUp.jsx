@@ -118,6 +118,7 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
 
   const templateid = useParams().templateid;
 
+
   useEffect(() => {
     axios
       .post(`/api/d/file`, {
@@ -162,7 +163,7 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
             }
           })
           .catch(() => {
-            notify("File is too Big !","error")();
+            notify("File is too Big !", "error")();
           });
       }
     },
@@ -216,6 +217,24 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
     [file_type, index, notify, setPopUp2, templateid, webLink]
   );
 
+  const DeleteFile = React.useCallback(() => {
+    axios
+      .post(`/api/dashboard/delete-file`, {
+        index: index,
+        type: file_type,
+        templateid: templateid,
+      })
+      .then((res) => {
+        if (res.data.success) {
+          setPopUp2(false);
+          notify(res.data.message)();
+        }
+      })
+      .catch(() => {
+        Signout();
+      });
+  }, [templateid, file_type, index]);
+
   const help = {
     // eslint-disable-next-line getter-return
     get file_accept_string() {
@@ -231,7 +250,6 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
     },
   };
 
-  console.log(fileInfo);
 
   return (
     <div className="fixed z-50 right-0 top-0 bottom-0 backdrop-grayscale backdrop-blur-sm h-full w-full flex items-center justify-center">
@@ -344,6 +362,23 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
                       <span className="font-bold">
                         File uploaded : {fileInfo}
                       </span>
+                      <button
+                        className="ml-auto mr-2 text-red-400"
+                        onClick={DeleteFile}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-red-400">

@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const user = localStorage.getItem("user");
-    // console.log(user);
+    // (user);
     if (user) {
       setUser(JSON.parse(atob(user)));
     }
@@ -68,9 +68,7 @@ export const AuthProvider = ({ children }) => {
         });
         localStorage.removeItem("user");
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => {});
   };
   const value = {
     user,

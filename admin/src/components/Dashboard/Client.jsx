@@ -47,7 +47,7 @@ export const DashboardClient = () => {
         <div className="my-4 pl-4 text-white underline underline-offset-4">
           <span>Fill the form : </span>
         </div>
-        <div className="my-8 w-2/4">
+        <div className="my-8 sm:w-2/4 lg:w-1/4">
           <label
             htmlFor="email-adress-icon"
             className="block mb-2 text-xs font-medium text-white"
@@ -79,7 +79,7 @@ export const DashboardClient = () => {
             />
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-6 gap-4 mt-4 mb-8">
+        <div className="overflow-x-scroll sm:overflow-x-hidden pb-4 flex sm:flex-none sm:grid sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4 mt-4 mb-8">
           {SearchTemplate &&
             SearchTemplate.map((e, index) => {
               return (
@@ -126,14 +126,13 @@ export const FillClient = () => {
   //   })
   //   .filter((e) => e !== undefined);
 
-  console.log(template);
   return (
     // <Scrollspy sectionRefs={sectionRefs}>
     //   {({ currentElementIndexInViewport }) => (
-    <div className="flex flex-row gap-x-8 text-white">
-      <div className="basis-8/12 border-r-2 border-white pr-8">
+    <div className="flex flex-col-reverse lg:flex-row gap-x-8 text-white">
+      <div className="basis-8/12 lg:border-r-2 lg:border-white lg:pr-6">
         {template && (
-          <div className="p-4">
+          <div className="pl-1 lg:pl-4">
             <div className="font-semibold text-xl">{template.name}</div>
             <div className="flex py-1">
               <svg
@@ -152,7 +151,7 @@ export const FillClient = () => {
             </div>
           </div>
         )}
-        <div className="pl-4 ">
+        <div className="pl-1 lg:pl-4">
           {/* scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-transparent scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded dark:scrollbar-track:!bg-slate-500/[0.16] dark:scrollbar-thumb:!bg-slate-500/50 max-h-96 supports-scrollbars:pr-2 lg:max-h-96 */}
           {template &&
             template.layout?.map((e, i) => (
@@ -160,7 +159,7 @@ export const FillClient = () => {
             ))}
         </div>
       </div>
-      <div className="basis-4/12">
+      <div className="basis-4/12 hidden lg:block">
         <div className="sticky top-8 rounded p-4 mb-2">
           <div>
             <span className="font-semibold">Table of Contents : </span>
@@ -446,7 +445,7 @@ export const DashboardClientHeader = () => {
             </NavLink>
           </div>
           <div className="flex gap-x-12">
-            <div>
+            <div className="hidden sm:block ">
               <span>Hi {user.email || "Anonymous"}</span>
             </div>
             <button onClick={Signout} className="px-3">
@@ -456,7 +455,7 @@ export const DashboardClientHeader = () => {
           </div>
         </div>
       </div>
-      <div className="px-8 py-8 text-white">
+      <div className="px-4 lg:px-8 pt-10 pb-16 text-white">
         <Outlet />
       </div>
     </div>

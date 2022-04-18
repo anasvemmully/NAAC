@@ -80,9 +80,7 @@ export const ClientProvider = ({ children }) => {
           naviagate("/");
         }
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => {});
   }, [naviagate, user.Us341D]);
 
   const value = {

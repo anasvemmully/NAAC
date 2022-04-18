@@ -1347,6 +1347,35 @@ const AdminCompleteGetForm = async (req, res, next) => {
   }
 };
 
+const AdminPostDeleteFile = async (req, res, next) => {
+  try {
+    const { index, type, templateid } = req.body;
+
+    await Template.findById(templateid).then((t) => {
+      if (t) {
+        if (fs.existsSync(t.handle.publish[index][type].path)) {
+          fs.unlinkSync(t.handle.publish[index][type].path);
+        }
+        t.handle.publish[index][type] = {};
+        t.markModified("handle.publish");
+        t.save().then((t) => {
+          res.status(200).send({
+            message: "File Deleted",
+            success: true,
+          });
+        });
+      } else { 
+        throw new Error("Something went wrong");
+      }
+    });
+  } catch {
+    res.status(500).send({
+      success: false,
+      message: "Something Went Wrong",
+    });
+  }
+};
+
 module.exports = {
   AdminRegisterGet,
   AdminRegisterPost,
@@ -1371,6 +1400,7 @@ module.exports = {
   AdminPostDashboardView,
   AdminPostFileInfo,
   AdminPostUploadFile,
+  AdminPostDeleteFile,
 
   ClientPostLogin,
   ClientOTPGetVerification,

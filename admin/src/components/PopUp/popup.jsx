@@ -9,7 +9,7 @@ import "flowbite";
 // TODO : succesfuly uplooaded status
 
 const Popup = (props) => {
-  const { popup, data, setPopup, smartDelete } = props;
+  const { data, setPopup, smartDelete } = props;
 
   const { treeData, SET_TREE_DATA } = useContext(TreeContext);
   const [Data, setData] = useState({
@@ -54,7 +54,6 @@ const Popup = (props) => {
       else return false;
     },
   };
-  // console.log(Data);
 
   return (
     <div className="fixed z-50 right-0 top-0 bottom-0 backdrop-grayscale backdrop-blur-sm h-full w-full flex items-center justify-center">

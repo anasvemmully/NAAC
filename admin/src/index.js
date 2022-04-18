@@ -39,7 +39,7 @@ const NotFound = () => {
   };
   return (
     <div style={Style}>
-      <span style={{ fontWeight: "bold", fontSize: "4rem" }}>Error 404</span>
+      <span className="font-bold text-4xl">Error 404</span>
     </div>
   );
 };

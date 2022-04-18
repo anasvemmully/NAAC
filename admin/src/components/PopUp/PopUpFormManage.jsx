@@ -58,7 +58,7 @@ export const PopUpFormManage = ({
       >
         <div className="relative px-4 w-full max-w-2xl h-full md:h-auto">
           <div className="rounded-lg shadow bg-gray-700">
-            <div className="flex gap-32 justify-between items-start p-5 rounded-t border-b border-gray-300">
+            <div className="flex justify-between items-start p-5 rounded-t border-b border-gray-300">
               <h3 className="text-xl font-semibold lg:text-2xl text-white">
                 <svg
                   className="h-6 w-6 text-white inline-block mr-3"
@@ -71,10 +71,9 @@ export const PopUpFormManage = ({
               </h3>
               <button
                 type="button"
-                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 items-center dark:hover:bg-gray-600 dark:hover:text-white"
                 data-modal-toggle="defaultModal"
                 onClick={() => {
-                  console.log("clicked");
                   setIsPopUp(!ispopup);
                 }}
               >
@@ -178,14 +177,9 @@ export const PopUpFormManage = ({
                       .writeText(`http://localhost:8000/view/${id}`)
                       .then(
                         function () {
-                          console.log(
-                            "Copying to clipboard was successful!"
-                          );
                           setIsPopUp(!ispopup);
                         },
-                        function (err) {
-                          console.error("Could not copy text: ", err);
-                        }
+                        function (err) {}
                       );
                   }}
                   className="bg-slate-500 p-2 flex hover:bg-slate-800 cursor-pointer place-content-center rounded gap-1 text-white text-sm"

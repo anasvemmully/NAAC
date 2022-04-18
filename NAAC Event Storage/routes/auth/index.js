@@ -27,6 +27,7 @@ var {
   AdminPostDashboardView,
   AdminPostFileInfo,
   AdminPostUploadFile,
+  AdminPostDeleteFile,
 
   ClientPostLogin,
   ClientOTPGetVerification,
@@ -67,6 +68,7 @@ router
 router.route("/dashboard/view").post(AdminPostDashboardView);
 router.route("/dashboard/file").post(AdminPostFileInfo);
 router.route("/dashboard/upload-file").post(AdminPostUploadFile);
+router.route("/dashboard/delete-file").post(AdminPostDeleteFile);
 
 router.route("/dashboard/delete-form").post(AdminDeleteForm);
 router.route("/dashboard/form-complete").get(AdminCompleteGetForm).post(AdminCompletePostForm);

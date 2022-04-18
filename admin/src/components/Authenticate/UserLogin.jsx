@@ -20,8 +20,7 @@ const Userlogin = () => {
 
   const ClientPostLogin = React.useCallback(
     (e) => {
-      console.log("userLogin.email");
-      console.log(userLogin.email);
+      e.target.disabled = true;
       e.preventDefault();
       axios
         .post(`/api/d/login`, {
@@ -46,7 +45,7 @@ const Userlogin = () => {
           }
         });
     },
-    [notify,userLogin.email]
+    [userLogin.email]
   );
 
   const ClientOTPGetVerification = React.useCallback(
@@ -86,6 +85,7 @@ const Userlogin = () => {
 
   const ClientPostResendOTP = React.useCallback(
     (e) => {
+      e.target.disabled = true;
       setUserLogin({
         ...userLogin,
         otp: "",
@@ -109,7 +109,7 @@ const Userlogin = () => {
 
   return (
     <div className="flex w-screen	h-screen justify-center items-center bg-slate-100">
-      <form className="bg-slate-500 px-8 py-8 rounded-lg text-white">
+      <form className="bg-slate-500 px-3 py-3 md:px-6 md:py-6 lg:px-8 lg:py-8 rounded-lg text-white">
         {userLogin.emailok ? (
           <div>
             <h1 className="font-bold text-2xl">Enter OTP</h1>
@@ -133,7 +133,7 @@ const Userlogin = () => {
               Submit
             </button>
 
-            <div className="mt-6">
+            <div className="mt-2">
               <button
                 className="text-white bg-blue-600 hover:bg-[#4285F4]/90 focus:ring-4 focus:outline-none focus:ring-[#4285F4]/50 font-medium rounded-lg text-sm px-5 py-2.5  mr-2 mb-2"
                 onClick={ClientPostResendOTP}

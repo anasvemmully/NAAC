@@ -127,14 +127,16 @@ const App = (props) => {
       </button>
       <br />
       <input
-        className="placeholder:italic mt-4 mb-8 placeholder:text-gray-400 bg-white border border-gray-300 rounded py-2 px-3 w-2/5 focus:outline-none focus:border-sky-500 focus:ring-sky-500 focus:ring-1 sm:text-sm"
+        className="placeholder:italic mt-4 mb-8 placeholder:text-gray-400 bg-white border border-gray-300 rounded py-2 px-3 w-full sm:w-3/5 md:w-2/5 focus:outline-none focus:border-sky-500 focus:ring-sky-500 focus:ring-1 sm:text-sm"
         type="text"
         value={templateName}
         onChange={(e) => settemplateName(e.target.value)}
       />
-      {treeData.map((item, index) => {
-        return <Node key={index} {...item} settree={settree} index={index} />;
-      })}
+      <div className="overflow-x-scroll md:overflow-hidden">
+        {treeData.map((item, index) => {
+          return <Node key={index} {...item} settree={settree} index={index} />;
+        })}
+      </div>
     </>
   );
 };
@@ -196,14 +198,14 @@ const TreeUpload = ({ scrollMeDown }) => {
 
             notify();
 
-            console.log(
-              `%c${templateName}\n\n${JSON.stringify(
-                treeData,
-                null,
-                2
-              )}\n\n${templateID}`,
-              "color: green; background: yellow; font-size: 20px"
-            );
+            // console.log(
+            //   `%c${templateName}\n\n${JSON.stringify(
+            //     treeData,
+            //     null,
+            //     2
+            //   )}\n\n${templateID}`,
+            //   "color: green; background: yellow; font-size: 20px"
+            // );
           }}
         >
           Upload
@@ -248,13 +250,13 @@ const Wrapper = () => {
   }, [setTreeData, settemplateName, TemplateId, settemplateID, Signout]);
 
   return (
-    <div className="flex flex-row gap-x-8">
-      <div className="basis-8/12 border-r-2 border-white">
+    <div className="flex flex-col-reverse lg:flex-row gap-x-8">
+      <div className="basis-8/12 lg:border-r-2 lg:border-white lg:pr-6">
         <App />
         {/* <input type="hidden" value="scrollme" /> */}
       </div>
       <div className="basis-4/12">
-        <div className="sticky top-8">
+        <div className="sticky top-8 mb-4 lg:mb-0">
           <TreeUpload />
           {UPDATE && (
             <div

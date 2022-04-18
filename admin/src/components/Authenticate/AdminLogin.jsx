@@ -19,7 +19,6 @@ export default function AdminLogin() {
     axios
       .post(`/api/login`, AdminCredentials)
       .then((response) => {
-        console.log(response.data);
         if (response.status === 200) {
           setError(null);
           let token = JSON.parse(atob(response.data.data));
