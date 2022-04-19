@@ -1347,7 +1347,7 @@ const AdminCompleteGetForm = async (req, res, next) => {
   }
 };
 
-const AdminPostDeleteFile = async (req, res, next) => {
+const AdminClientPostDeleteFile = async (req, res, next) => {
   try {
     const { index, type, templateid } = req.body;
 
@@ -1376,6 +1376,8 @@ const AdminPostDeleteFile = async (req, res, next) => {
   }
 };
 
+
+
 module.exports = {
   AdminRegisterGet,
   AdminRegisterPost,
@@ -1400,8 +1402,9 @@ module.exports = {
   AdminPostDashboardView,
   AdminPostFileInfo,
   AdminPostUploadFile,
-  AdminPostDeleteFile,
-
+  
+  AdminClientPostDeleteFile,
+  
   ClientPostLogin,
   ClientOTPGetVerification,
   ClientPostResendOTP,

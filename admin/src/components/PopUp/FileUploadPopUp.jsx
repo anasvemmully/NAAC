@@ -219,7 +219,7 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
 
   const DeleteFile = React.useCallback(() => {
     axios
-      .post(`/api/dashboard/delete-file`, {
+      .post(`/api/d/delete`, {
         index: index,
         type: file_type,
         templateid: templateid,
