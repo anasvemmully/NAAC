@@ -623,34 +623,37 @@ const ClientPostLogin = async (req, res, next) => {
 
   try {
     const { email } = req.body;
-    await Member.findOne({ email }).then(async (member) => {
-      if (member !== null) {
-        const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
+    await OTP.deleteMany({
+      email : email,
+    }).then(async () => {
+      await Member.findOne({ email }).then(async (member) => {
+        if (member !== null) {
+          const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
 
-        const options = {
-          from: process.env.AUTH_MAIL_USER_ID,
-          to: email,
-          subject: "OTP for Login",
-          html: `<div>
-          <p>
-            We're happy you're here. This is your OTP, type it and fill the form
-          </p>
-          <div>
-            <h1>${otp}</h1>
-          </div>
-          <div>
-            Hurry up !, this OTP will expire in 1 hour
-          </div>
-        </div>`,
-        };
-        const otpModel = new OTP({
-          user_id: member._id,
-          email: email,
-          otp: otp,
-          createdAt: new Date(),
-          expiresAt: new Date(new Date().getTime() + 3600000),
-        });
-        otpModel.save().then(() => {
+          const options = {
+            from: process.env.AUTH_MAIL_USER_ID,
+            to: email,
+            subject: "OTP for Login",
+            html: `<div>
+            <p>
+              We're happy you're here. This is your OTP, type it and fill the form
+            </p>
+            <div>
+              <h1>${otp}</h1>
+            </div>
+            <div>
+              Hurry up !, this OTP will expire in 1 hour
+            </div>
+          </div>`,
+          };
+          const otpModel = new OTP({
+            user_id: member._id,
+            email: email,
+            otp: otp,
+            createdAt: new Date(),
+            expiresAt: new Date(new Date().getTime() + 3600000),
+          });
+          otpModel.save();
           transporter.sendMail(options, function (error, info) {
             if (error) {
               throw new Error("Email sending failed");
@@ -663,13 +666,13 @@ const ClientPostLogin = async (req, res, next) => {
               });
             }
           });
-        });
-      } else {
-        res.status(200).send({
-          status: false,
-          message: "Email Not Found",
-        });
-      }
+        } else {
+          res.status(500).send({
+            status: false,
+            message: "Email Not Found!",
+          });
+        }
+      });
     });
   } catch (err) {
     res.status(500).send({
@@ -692,7 +695,7 @@ const ClientOTPGetVerification = async (req, res, next) => {
         if (e.length === 0) {
           res.status(200).send({
             status: false,
-            message: "Account record doesn't exist",
+            message: "OTP expired",
           });
         } else {
           const { expiresAt, otp } = e[0];
@@ -789,18 +792,17 @@ const ClientPostResendOTP = async (req, res, next) => {
             createdAt: new Date(),
             expiresAt: new Date(new Date().getTime() + 3600000),
           });
-          otpModel.save().then(() => {
-            transporter.sendMail(options, function (error, info) {
-              if (error) {
-              } else {
-              }
-            });
-            res.status(200).send({
-              message: "OTP Sent",
-              success: true,
-              userid: member._id,
-              email: member.email,
-            });
+          otpModel.save();
+          transporter.sendMail(options, function (error, info) {
+            if (error) {
+            } else {
+            }
+          });
+          res.status(200).send({
+            message: "OTP Sent",
+            success: true,
+            userid: member._id,
+            email: member.email,
           });
         } else {
           res.status(200).send({
@@ -875,7 +877,6 @@ const ClientGetDashboard = async (req, res, next) => {
               createdAt: e.createdAt,
             };
           });
-        console.log(temp);
         res.status(200).send({
           message: "Success",
           success: true,
@@ -1364,7 +1365,7 @@ const AdminClientPostDeleteFile = async (req, res, next) => {
             success: true,
           });
         });
-      } else { 
+      } else {
         throw new Error("Something went wrong");
       }
     });
@@ -1375,8 +1376,6 @@ const AdminClientPostDeleteFile = async (req, res, next) => {
     });
   }
 };
-
-
 
 module.exports = {
   AdminRegisterGet,
@@ -1402,9 +1401,9 @@ module.exports = {
   AdminPostDashboardView,
   AdminPostFileInfo,
   AdminPostUploadFile,
-  
+
   AdminClientPostDeleteFile,
-  
+
   ClientPostLogin,
   ClientOTPGetVerification,
   ClientPostResendOTP,

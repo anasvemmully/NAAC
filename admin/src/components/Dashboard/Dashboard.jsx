@@ -228,7 +228,7 @@ export const DashboardHeader = () => {
             </div>
             <button onClick={Signout} className="px-3">
               <i className="fa fa-sign-out" aria-hidden="true"></i>
-              <span className="pl-2">Sign out</span>
+              <span className="pl-2 hidden sm:block">Sign out</span>
             </button>
           </div>
         </div>

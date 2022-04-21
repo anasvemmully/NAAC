@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable react-hooks/exhaustive-deps */
 import axios from "axios";
 import React, { useState } from "react";
@@ -18,17 +19,20 @@ const Userlogin = () => {
 
   const { notify, setUser } = React.useContext(ClientContext);
 
-  const ClientPostLogin = React.useCallback(
-    (e) => {
+  const ClientPostLogin = (e) => {
+    e.preventDefault();
+
+    var filter =
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (filter.test(userLogin.email)) {
       e.target.disabled = true;
-      e.preventDefault();
+      e.target.classList.toggle("cursor-not-allowed")
       axios
         .post(`/api/d/login`, {
           email: userLogin.email,
         })
         .then((res) => {
           if (res.data.success) {
-
             setUserLogin({
               email: res.data.email,
               otp: "",
@@ -36,17 +40,21 @@ const Userlogin = () => {
               emailok: true,
             });
             notify(res.data.message)();
-          } else {
-            setUserLogin({
-              ...userLogin,
-              email: "",
-            });
-            notify(res.data.message)();
           }
+        })
+        .catch(() => {
+          setUserLogin({
+            ...userLogin,
+            email: "",
+          });
+          notify("Email Not Found!", "error")();
+          e.target.disabled = false;
+          e.target.classList.toggle("cursor-not-allowed")
         });
-    },
-    [userLogin.email]
-  );
+    } else {
+      notify("Invalid Email", "error")();
+    }
+  };
 
   const ClientOTPGetVerification = React.useCallback(
     (e) => {
@@ -99,12 +107,14 @@ const Userlogin = () => {
         .then((res) => {
           if (res.data.success) {
             notify(res.data.message)();
-          } else {
-            notify(res.data.message)();
           }
+        })
+        .catch(() => {
+          notify("OTP generation failed, Try Again!", "error")();
+          e.target.disabled = false;
         });
     },
-    [notify, userLogin]
+    [userLogin]
   );
 
   return (
