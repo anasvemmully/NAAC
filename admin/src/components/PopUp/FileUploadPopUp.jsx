@@ -508,12 +508,3 @@ export const FileUploadPopUp = ({ setPopUp2, res, file_type }) => {
   );
 };
 
-// res.blob().then((blob) => {
-//   let url = window.URL.createObjectURL(blob);
-//   let a = document.createElement("a");
-//   a.href = url;
-//   a.download = "test.pdf";
-//   a.click();
-// });
-// const blob = await res.blob();
-// download(blob, "test.pdf");

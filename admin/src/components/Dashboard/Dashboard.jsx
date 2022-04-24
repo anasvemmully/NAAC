@@ -1,25 +1,18 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable array-callback-return */
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { Outlet, NavLink, Link } from "react-router-dom";
 import { AuthContext } from "../../authentication/Auth";
-import { ClientContext } from "../../authentication/ClientAuth";
 
 import { PopUpFormManage } from "../PopUp/PopUpFormManage";
 
 import { Tree } from "./Tree";
 
-import { toast } from "react-toastify";
-
-// import Card from "./Card";
-
-toast.configure();
-
 export const Dashboard = () => {
-  const { Signout } = useContext(AuthContext);
+  const { Signout, notify } = useContext(AuthContext);
   const [templates, setTemplates] = useState(null);
-  const { notify } = useContext(ClientContext);
+  // const { notify } = useContext(ClientContext);
 
   const GetTemplates = React.useCallback(() => {
     axios
@@ -62,7 +55,7 @@ export const Dashboard = () => {
   return (
     <>
       <div>
-        <div className="overflow-x-scroll sm:overflow-x-hidden pb-4 flex sm:flex-none sm:grid sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4 mt-4 mb-8">
+        <div className="overflow-x-scroll sm:overflow-x-hidden scrollbar pb-4 flex sm:flex-none sm:grid sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4 mt-4 mb-8">
           <div className="bg-slate-50 p-3 rounded group ">
             <Link
               to="/admin/dashboard/create/000000000000000000000000"
@@ -88,50 +81,34 @@ export const Dashboard = () => {
         <div className="my-4 pl-4 text-white underline underline-offset-4">
           <span>Recent Work</span>
         </div>
-        <div className="overflow-x-scroll sm:overflow-x-hidden pb-4 flex sm:flex-none sm:grid sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4 mt-4 mb-8">
+        <div className="overflow-x-scroll sm:overflow-x-hidden scrollbar scrollbar-thumb-blue-500 scrollbar-track-blue-300 pb-6 grid grid-cols-2 flex sm:flex-none sm:grid sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4 mt-4 mb-8">
           {templates &&
-            templates
-              .filter((e) => e.islive === false && e.isActive === true)
-              .map((e, index) => {
-                return (
-                  <div
-                    key={index}
-                    className="bg-slate-50 p-3 sm:p-4 rounded group"
-                  >
-                    <div>
-                      <Link
-                        to={`/admin/dashboard/create/${e._id}`}
-                        className="group-hover:border-blue-500 group-hover:border-solid px-10 py-6 py-auto flex items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-base"
-                      >
-                        <span className="font-semibold text-slate-600 group-hover:text-blue-500">
-                          {e.name}
-                        </span>
-                      </Link>
-                    </div>
+            templates.map((e, index) => {
+              return (
+                <div
+                  key={index}
+                  className="relative bg-slate-50 p-3 sm:p-4 rounded group"
+                >
+                  <div>
+                    <Link
+                      to={`/admin/dashboard/create/${e._id}`}
+                      className="group-hover:border-blue-500 group-hover:border-solid px-10 py-6 py-auto flex items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-base"
+                    >
+                      <span className="font-semibold text-slate-600 group-hover:text-blue-500">
+                        {e.name}
+                      </span>
+                    </Link>
                   </div>
-                );
-              })}
-        </div>
-      </div>
-      <div>
-        <div className="mt-4 pl-4 text-white underline underline-offset-4">
-          <span>Published Forms</span>
-        </div>
-        <div className="overflow-x-scroll sm:overflow-x-hidden pb-4 flex sm:flex-none sm:grid sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4 mt-4 mb-8">
-          {templates &&
-            templates
-              .filter((e) => e.islive === true && e.isActive === false)
-              .map((e, index) => {
-                return (
                   <Form
-                    key={index}
                     index={index}
                     id={e._id}
                     name={e.name}
                     DeleteForm={DeleteForm}
+                    GetTemplates={GetTemplates}
                   />
-                );
-              })}
+                </div>
+              );
+            })}
         </div>
       </div>
     </>
@@ -139,41 +116,31 @@ export const Dashboard = () => {
 };
 
 const Form = (props) => {
-  const { index, id, name, DeleteForm } = props;
+  const { index, id, name, DeleteForm, GetTemplates } = props;
 
   const [ispopup, setIsPopUp] = useState(false);
 
   return (
-    <div className="bg-slate-50 p-4 rounded">
-      <div className="flex flex-row gap-2 justify-between">
-        <Link
-          to={`/admin/dashboard/view/${id}`}
-          className="grow hover:border-blue-500 hover:border-solid px-10 py-6 items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-base "
+    <div className="absolute right-1 top-1">
+      <button
+        onClick={() => {
+          setIsPopUp(!ispopup);
+        }}
+        className="cursor-cell"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-7 w-7"
+          viewBox="0 0 20 20"
+          fill="currentColor"
         >
-          <div key={index}>
-            <div>
-              <div className="font-semibold">{name}</div>
-            </div>
-          </div>
-        </Link>
-        <div
-          onClick={() => {
-            setIsPopUp(!ispopup);
-          }}
-          className="cursor-pointer flex group hover:border-red-500 hover:border-solid p-2 items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-base"
-        >
-          <button>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 group-hover:text-red-700"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-            </svg>
-          </button>
-        </div>
-      </div>
+          <path
+            fillRule="evenodd"
+            d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
       {ispopup && (
         <PopUpFormManage
           setIsPopUp={setIsPopUp}
@@ -181,6 +148,7 @@ const Form = (props) => {
           ispopup={ispopup}
           name={name}
           id={id}
+          GetTemplates={GetTemplates}
         />
       )}
     </div>
@@ -188,9 +156,6 @@ const Form = (props) => {
 };
 
 export const Create = () => {
-  // const { Signout } = useContext(AuthContext);
-  // if (res.data.isAuthenticated) Signout();
-
   return <Tree />;
 };
 
@@ -221,12 +186,22 @@ export const DashboardHeader = () => {
             >
               <div>Manage</div>
             </NavLink>
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                isActive
+                  ? "font-bold underline underline-offset-8"
+                  : "font-normal hover:underline hover:underline-offset-8"
+              }
+            >
+              <div>Home</div>
+            </NavLink>
           </div>
           <div className="flex gap-x-12">
             <div className="hidden sm:block">
               <span>Hi {user.username}</span>
             </div>
-            <button onClick={Signout} className="px-3">
+            <button onClick={Signout} className="flex items-center ">
               <i className="fa fa-sign-out" aria-hidden="true"></i>
               <span className="pl-2 hidden sm:block">Sign out</span>
             </button>
@@ -249,6 +224,146 @@ export const DashboardHeader = () => {
 //MANAGE ROUTES
 //MANAGE ROUTES
 //MANAGE ROUTES
+
+const KeywordPopup = ({ manageTemplateId }) => {
+  const [keyword, setKeyword] = useState("");
+  const [keywordList, setKeywordList] = useState("");
+  // const [error, setError] = useState(false);
+
+  // const toastId = React.useRef(null);
+
+  const { notify } = useContext(AuthContext);
+
+  React.useEffect(() => {
+    GetKeywords();
+  }, []);
+
+  const GetKeywords = React.useCallback(() => {
+    axios
+      .get(`/api/dashboard/keyword`, {
+        // params: {
+        //   id: manageTemplateId,
+        // },
+      })
+      .then((res) => {
+        if (res.data.success) {
+          setKeywordList(res.data.keywords);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  const DeleteKeyword = React.useCallback(
+    (e) => {
+      return () => {
+        axios
+          .delete(`/api/dashboard/keyword/`, {
+            data: { keyword: e },
+          })
+          .then((res) => {
+            if (res.data.success) {
+              notify(res.data.message);
+              GetKeywords();
+            }
+          })
+          .catch((err) => {
+            notify(err.response.data.message);
+          });
+      };
+    },
+    [GetKeywords, notify]
+  );
+
+  const AddKeyword = React.useCallback(() => {
+    if (keyword === "") {
+      notify("Field is empty !", "error");
+    } else {
+      axios
+        .post(`/api/dashboard/keyword`, {
+          keyword: keyword,
+        })
+        .then((res) => {
+          if (res.data.success) {
+            setKeyword("");
+            notify(res.data.message);
+            GetKeywords();
+          }
+        })
+        .catch((err) => {
+          notify(err.response.data.message);
+        });
+    }
+  }, [GetKeywords, keyword, notify]);
+
+  return (
+    <div className="mt-2">
+      <div className="flex flex-wrap gap-1">
+        {keywordList &&
+          keywordList.map((e, index) => {
+            return (
+              <div
+                className="flex items-center bg-slate-800 p-1 rounded"
+                key={index}
+              >
+                <button className="mr-0.5" onClick={DeleteKeyword(e)}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+                <div className="text-xs my-1">{e}</div>
+              </div>
+            );
+          })}
+      </div>
+      <div className="flex gap-3">
+        <div className="relative z-0 mt-6 px-6">
+          <input
+            type="text"
+            value={keyword}
+            onChange={(e) => {
+              setKeyword(e.target.value);
+            }}
+            name="keyword"
+            className="text-white block py-2.5 px-0 w-full text-sm bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+            placeholder=" "
+            required
+          />
+          <label
+            htmlFor="keyword"
+            className="absolute text-sm text-white-500 dark:text-white-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-white-600 peer-focus:dark:text-white-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:translate-x-6"
+          >
+            Add Keyword
+          </label>
+        </div>
+        <button onClick={AddKeyword}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const Popup = ({ manageTemplateId }) => {
   const [members, setMembers] = useState([]);
@@ -288,9 +403,9 @@ const Popup = ({ manageTemplateId }) => {
       })
       .catch((err) => {
         setError(true);
-        notify(`${add} error`, "error")();
+        notify(err.response.data.message, "error")();
       });
-  }, [GetUserMember, add, manageTemplateId]);
+  }, [GetUserMember, add, notify]);
 
   const AdminDeleteUser = React.useCallback(
     (e) => {
@@ -307,25 +422,8 @@ const Popup = ({ manageTemplateId }) => {
           });
       };
     },
-    [GetUserMember, manageTemplateId]
+    [GetUserMember, notify]
   );
-
-  // const notify = (message) => {
-  //   return function () {
-  //     if (!toast.isActive(toastId.current)) {
-  //       toastId.current = toast.success(message, {
-  //         position: "top-right",
-  //         transition: Slide,
-  //         autoClose: 1000,
-  //         hideProgressBar: true,
-  //         closeOnClick: true,
-  //         pauseOnHover: false,
-  //         draggable: true,
-  //         progress: undefined,
-  //       });
-  //     }
-  //   };
-  // };
 
   return (
     <div>
@@ -424,11 +522,16 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
   const [resultMembers, setResultMembers] = useState();
   const [roles, setRoles] = useState([]);
 
+  const [keywordList, setKeywordList] = useState([]);
+  const [keyword, setKeyword] = useState(null);
+  const [key, setKey] = useState(null);
+
   const { notify } = useContext(AuthContext);
 
   useEffect(() => {
     GetUserMember();
     GetRolesMember();
+    GetKeywords();
     // eslint-disable-next-line no-use-before-define
   }, []);
 
@@ -467,7 +570,7 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
       });
       setResultMembers(temp);
     },
-    [members]
+    [members, roles]
   );
 
   const AddUserRole = React.useCallback(
@@ -491,15 +594,32 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
           })
           .then((res) => {
             GetRolesMember();
-            notify("Role Updated");
+            notify(res.data.message);
           })
-          .catch(() => {
-            notify("Role Taken");
+          .catch((err) => {
+            notify(err.response.data.message, "error");
           });
       };
     },
-    [GetRolesMember, level, manageTemplate]
+    [GetRolesMember, level, manageTemplate, notify]
   );
+
+  const GetKeywords = React.useCallback(() => {
+    axios
+      .get(`/api/dashboard/keyword`, {
+        params: {
+          id: manageTemplateId,
+          index: index,
+        },
+      })
+      .then((res) => {
+        if (res.data.success) {
+          setKeywordList(res.data.keywords);
+          setKey(res.data.key);
+        }
+      })
+      .catch((err) => {});
+  }, [index, manageTemplateId]);
 
   const AdminDeleteRoleUser = React.useCallback(
     (index, role) => {
@@ -521,8 +641,28 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
           .catch((err) => {});
       };
     },
-    [GetRolesMember, manageTemplateId]
+    [GetRolesMember, manageTemplateId, notify]
   );
+
+  const SelectKeyword = React.useCallback(() => {
+    if (keyword === null || keyword !== null) {
+      axios
+        .put(`/api/dashboard/keyword`, {
+          id: manageTemplateId,
+          index: index,
+          keyword: keyword,
+        })
+        .then((res) => {
+          if (res.data.success) {
+            notify("Keyword Updated");
+            GetKeywords();
+          }
+        })
+        .catch((err) => {
+          notify(err.response.data.message, "error");
+        });
+    }
+  }, [GetKeywords, index, keyword, manageTemplateId, notify]);
 
   return (
     <div className="fixed z-50 right-0 top-0 bottom-0 backdrop-grayscale backdrop-blur-sm h-full w-full flex items-center justify-center">
@@ -548,7 +688,7 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                   />
                 </svg>
-                <span className="pl-2 pr-8">Add User to fill the form</span>
+                <span className="pl-2 pr-8">Manage Section</span>
               </h3>
               <button
                 className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
@@ -571,7 +711,7 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
               </button>
             </div>
             <div>
-              <div className="mx-6 my-4">
+              <div className="mx-6 my-2">
                 {roles &&
                   roles.map((role, i) => {
                     return (
@@ -665,6 +805,42 @@ const Role = ({ PopUp2, setPopUp2, template, index, level }) => {
                   })}
               </div>
             </div>
+            <div className="mx-6 pb-6 ">
+              <label
+                htmlFor="countries"
+                className="block mb-2 text-xs text-white font-medium"
+              >
+                Choose Identifier:
+              </label>
+              <div>
+                <select
+                  id="countries"
+                  size={4}
+                  onClick={SelectKeyword}
+                  onChange={(e) => {
+                    setKeyword(e.target.value);
+                  }}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                >
+                  {keywordList &&
+                    keywordList.map((e, i) => {
+                      return (
+                        <option key={i} value={e}>
+                          {e}
+                        </option>
+                      );
+                      // }
+                    })}
+                </select>
+              </div>
+            </div>
+            {key && (
+              <div className="mx-6 pb-5 ">
+                <span className="text-sm font-bold bg-slate-900 p-2 rounded">
+                  {key}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -688,9 +864,7 @@ export const Manage = () => {
       .then((res) => {
         if (res.data.isAuthenticated) Signout();
         else {
-          const t = res.data.Template.filter(
-            (e) => e.islive === true && e.isActive === false
-          );
+          const t = res.data.Template.filter((e) => e.isComplete === false);
           setTemplates(t);
         }
       })
@@ -787,7 +961,6 @@ export const Manage = () => {
             </div>
           )}
           <div className="pl-4 ">
-            {/* scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-transparent scrollbar-track:!bg-slate-100 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300 scrollbar-track:!rounded dark:scrollbar-track:!bg-slate-500/[0.16] dark:scrollbar-thumb:!bg-slate-500/50 max-h-96 supports-scrollbars:pr-2 lg:max-h-96 */}
             {manageTemplate &&
               manageTemplate.map((e, index) => (
                 <TemplateView
@@ -801,10 +974,16 @@ export const Manage = () => {
           </div>
         </div>
         <div className="basis-4/12">
-          <div className="sticky top-8 bg-blue-700 rounded p-4 mb-2">
+          <div className="sticky sm:top-8 bg-blue-700 rounded p-4 mb-2">
             <div>
               <span className="font-semibold">Users</span>
               <Popup />
+            </div>
+          </div>
+          <div className="sticky sm:top-56 bg-blue-700 rounded p-4 mb-2">
+            <div>
+              <span className="font-semibold">Keywords</span>
+              <KeywordPopup />
             </div>
           </div>
         </div>
@@ -820,7 +999,7 @@ const TemplateView = ({ data, manageTemplateId, manageTemplate, index }) => {
     marginLeft: `${data.level * 3}rem`,
   };
 
-  if (data.type === "section") {
+  if (data.type === "section" && data.level === 0) {
     return (
       <div className="flex py-1" style={style}>
         <button
@@ -855,113 +1034,10 @@ const TemplateView = ({ data, manageTemplateId, manageTemplate, index }) => {
       </div>
     );
   } else {
-    const data_types = data.data
-      ? Object.keys(data.data).filter((f) => data.data[f] === true)
-      : null;
     return (
       <div className="p-3 ml-7 border mb-2 rounded" style={style}>
         <div className="mb-4">{data.title}</div>
-        <div className="flex justify-end	border-t border-slate-500	pt-2">
-          {data_types &&
-            data_types.map((f, index) => {
-              // eslint-disable-next-line default-case
-              switch (f) {
-                case "image":
-                  return (
-                    <div key={index} className="px-1">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  );
-                case "text":
-                  return (
-                    <div key={index} className="px-1">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                    </div>
-                  );
-                case "excel":
-                  return (
-                    <div key={index} className="px-1">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                  );
-                case "pdf":
-                  return (
-                    <div key={index} className="px-1">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                  );
-                case "web":
-                  return (
-                    <div key={index} className="px-1">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-                        />
-                      </svg>
-                    </div>
-                  );
-              }
-            })}
-        </div>
+        <div className="flex justify-end	border-t border-slate-500	pt-2"></div>
       </div>
     );
   }

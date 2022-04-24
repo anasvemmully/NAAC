@@ -114,9 +114,14 @@ export default function AdminLogin() {
             Login
           </button>
         </div>
-        <Link className="text-xs" to="/">
+        <div className="font-bold flex justify-between">
+        <Link className="text-xs" to="/fill">
           Got a form to fill?
         </Link>
+        <Link className="text-xs" to="/">
+          Home
+        </Link>
+        </div>
       </form>
     </div>
   );

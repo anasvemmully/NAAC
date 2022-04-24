@@ -10,7 +10,6 @@ import {
   DashboardClientHeader,
 } from "./components/Dashboard/Client";
 
-// import {Tree} from './components/Dashboard/Tree';
 import {
   AuthProvider,
   RequireAuth,
@@ -28,7 +27,7 @@ import {
   Create,
 } from "./components/Dashboard/Dashboard";
 
-import { View } from "./components/Dashboard/AdminMangeViewTemplate";
+import Home from "./components/Home";
 
 const NotFound = () => {
   const Style = {
@@ -50,8 +49,9 @@ render(
       <AuthProvider>
         <ClientProvider>
           <Routes>
+            <Route index element={<Home />} />
             <Route
-              index
+              path="/fill"
               element={
                 <RequireClient>
                   <Userlogin />
@@ -88,7 +88,7 @@ render(
               <Route index element={<Dashboard />} />
               <Route path="manage/" element={<Manage />} />
               <Route path="create/:TemplateId" element={<Create />} />
-              <Route path="view/:ViewId" element={<View />} />
+              {/* <Route path="view/:ViewId" element={<View />} /> */}
             </Route>
             <Route
               path="/form/:FormId"

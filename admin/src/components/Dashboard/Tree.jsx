@@ -4,59 +4,82 @@ import { AuthContext } from "../../authentication/Auth";
 
 import axios from "axios";
 
-import { toast, Slide } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useParams } from "react-router-dom";
 
-import { animateScroll as scroll } from "react-scroll";
-
 import Popup from "../PopUp/popup.jsx";
-import { useNavigate } from "react-router-dom";
 
 toast.configure();
 
 const Node = ({ index, title, type, parent, level, settree, data }) => {
-  const { treeData, SET_TREE_DATA } = useContext(TreeContext);
+  const { templateID, notify, treeData, SET_TREE_DATA } =
+    useContext(TreeContext);
   const [popup, setPopup] = useState(false);
 
   const style = {
     paddingLeft: `${level * 3}rem`,
   };
 
-  const addChild = () => {
-    var i = index + 1;
-    for (i; i < treeData.length; i++) {
-      if (treeData[i].level < level || treeData[i].level === level) {
-        break;
-      }
-    }
-    SET_TREE_DATA([
-      ...treeData.slice(0, i),
-      {
-        title: "",
-        type: "item",
-        parent: index,
-        level: level + 1,
-        data: {
-          image: false,
-          excel: false,
-          pdf: false,
-          text: false,
-          web: false,
-        },
-      },
-      ...treeData.slice(i),
-    ]);
-  };
+  const addChild = React.useCallback(() => {
+    axios
+      .post("/api/dashboard/template/addChild", {
+        index: index,
+        id: templateID,
+        level: level,
+      })
+      .then((res) => {
+        if (res.data.success) {
+          notify("Child Added")();
+          var i = index + 1;
+          for (i; i < treeData.length; i++) {
+            if (treeData[i].level < level || treeData[i].level === level) {
+              break;
+            }
+          }
+          SET_TREE_DATA([
+            ...treeData.slice(0, i),
+            {
+              title: "",
+              type: "item",
+              parent: index,
+              level: level + 1,
+              data: null,
+            },
+            ...treeData.slice(i),
+          ]);
+        }
+      })
+      .catch(() => {
+        notify("something went wrong!", "error")();
+      });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [SET_TREE_DATA, templateID, treeData]);
 
   const smartDelete = () => {
-    var i = index + 1;
-    for (i; i < treeData.length; i++) {
-      if (treeData[i].level < level || treeData[i].level === level) {
-        break;
-      }
-    }
-    SET_TREE_DATA([...treeData.slice(0, index), ...treeData.slice(i)]);
+    axios
+      .post("/api/dashboard/template/deleteChild", {
+        id: templateID,
+        index: index,
+        level: level,
+      })
+      .then((res) => {
+        if (res.data.success) {
+          notify("Deleted Successfully")();
+
+          var i = index + 1;
+          for (i; i < treeData.length; i++) {
+            if (treeData[i].level < level || treeData[i].level === level) {
+              break;
+            }
+          }
+          SET_TREE_DATA([...treeData.slice(0, index), ...treeData.slice(i)]);
+        }
+      })
+      .catch(() => {
+        notify("something went wrong!", "error")();
+      });
   };
 
   return (
@@ -112,8 +135,43 @@ const Node = ({ index, title, type, parent, level, settree, data }) => {
 };
 
 const App = (props) => {
-  const { treeData, templateName, settemplateName } = useContext(TreeContext);
+  const {
+    notify,
+    treeData,
+    templateID,
+    templateName,
+    // settemplateName,
+    SET_TREE_DATA,
+  } = useContext(TreeContext);
   const [settree, settreeSet] = useState(true);
+
+  const AddSection = React.useCallback(() => {
+    axios
+      .post("/api/dashboard/template/add", {
+        templateName,
+        index: treeData.length,
+        id: templateID,
+      })
+      .then((res) => {
+        if (res.data.success) {
+          notify("Section Added")();
+          SET_TREE_DATA([
+            ...treeData,
+            {
+              title: "",
+              type: "section",
+              parent: null,
+              level: 0,
+              data: null,
+            },
+          ]);
+        }
+      })
+      .catch(() => {
+        notify("something went wrong!", "error")();
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [SET_TREE_DATA, templateID, templateName, treeData]);
 
   return (
     <>
@@ -127,11 +185,32 @@ const App = (props) => {
       </button>
       <br />
       <input
-        className="placeholder:italic mt-4 mb-8 placeholder:text-gray-400 bg-white border border-gray-300 rounded py-2 px-3 w-full sm:w-3/5 md:w-2/5 focus:outline-none focus:border-sky-500 focus:ring-sky-500 focus:ring-1 sm:text-sm"
+        className="placeholder:italic mt-4 mb-8 mr-3 placeholder:text-gray-400 bg-white border border-gray-300 rounded py-2 px-3 w-full sm:w-3/5 md:w-2/5 focus:outline-none focus:border-sky-500 focus:ring-sky-500 focus:ring-1 sm:text-sm"
         type="text"
+        disabled
         value={templateName}
-        onChange={(e) => settemplateName(e.target.value)}
       />
+      <span>
+        <button
+          className="font-semibold rounded-md bg-red-500 text-white px-3 py-2"
+          onClick={AddSection}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+        </button>
+      </span>
       <div className="overflow-x-scroll md:overflow-hidden">
         {treeData.map((item, index) => {
           return <Node key={index} {...item} settree={settree} index={index} />;
@@ -141,98 +220,9 @@ const App = (props) => {
   );
 };
 
-const TreeUpload = ({ scrollMeDown }) => {
-  const { setUPDATE, treeData, SET_TREE_DATA, templateID, templateName } =
-    useContext(TreeContext);
-
-  const toastId = React.useRef(null);
-  const navigate = useNavigate();
-
-  const notify = () => {
-    if (!toast.isActive(toastId.current)) {
-      toastId.current = toast.success("Uploaded Successfully", {
-        position: "top-right",
-        transition: Slide,
-        autoClose: 800,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-        progress: undefined,
-      });
-    }
-  };
-
-  return (
-    <div className="flex space-x-4 mt-8">
-      <div>
-        <button
-          className="font-semibold rounded-md bg-red-500 text-white px-3 py-2"
-          onClick={() => {
-            scroll.scrollToBottom();
-            SET_TREE_DATA([
-              ...treeData,
-              {
-                title: "",
-                type: "section",
-                parent: null,
-                level: 0,
-                data: null,
-              },
-            ]);
-          }}
-        >
-          Add
-        </button>
-      </div>
-      <div>
-        <button
-          className="font-semibold rounded-md bg-red-500 text-white px-3 py-2"
-          onClick={() => {
-            axios.post(`/api/data`, {
-              name: templateName,
-              data: treeData,
-              templateID: templateID,
-            });
-            setUPDATE(false);
-
-            notify();
-
-            // console.log(
-            //   `%c${templateName}\n\n${JSON.stringify(
-            //     treeData,
-            //     null,
-            //     2
-            //   )}\n\n${templateID}`,
-            //   "color: green; background: yellow; font-size: 20px"
-            // );
-          }}
-        >
-          Upload
-        </button>
-      </div>
-      <div>
-        <button
-          className="font-semibold rounded-md bg-blue-500 text-white px-3 py-2"
-          onClick={() => {
-            scroll.scrollToTop();
-            axios
-              .post(`/api/dashboard/create/${templateID}`, {})
-              .then((res) => {
-                navigate("/admin/dashboard");
-              });
-          }}
-        >
-          Publish
-        </button>
-      </div>
-    </div>
-  );
-};
-
 const Wrapper = () => {
   const { TemplateId } = useParams();
-  const { UPDATE, settemplateName, setTreeData, settemplateID } =
+  const { settemplateName, setTreeData, settemplateID } =
     useContext(TreeContext);
   const { Signout } = useContext(AuthContext);
 
@@ -251,42 +241,8 @@ const Wrapper = () => {
 
   return (
     <div className="flex flex-col-reverse lg:flex-row gap-x-8">
-      <div className="basis-8/12 lg:border-r-2 lg:border-white lg:pr-6">
+      <div className="basis-8/12">
         <App />
-        {/* <input type="hidden" value="scrollme" /> */}
-      </div>
-      <div className="basis-4/12">
-        <div className="sticky top-8 mb-4 lg:mb-0">
-          <TreeUpload />
-          {UPDATE && (
-            <div
-              id="alert-additional-content-4"
-              className="p-4 mb-4 bg-yellow-100 rounded-lg dark:bg-yellow-200 my-4"
-              role="alert"
-            >
-              <div className="flex items-center">
-                <svg
-                  className="mr-2 w-5 h-5 text-yellow-700 dark:text-yellow-800"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
-                <h3 className="text-lg font-medium text-yellow-700 dark:text-yellow-800">
-                  Unsaved Changes
-                </h3>
-              </div>
-              <div className="mt-2 mb-4 pl-7 text-sm text-yellow-700 dark:text-yellow-800">
-                You are seeing this message because you have unsaved changes,
-                please save your changes before leaving this page.
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

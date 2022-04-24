@@ -26,7 +26,7 @@ const Userlogin = () => {
       /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if (filter.test(userLogin.email)) {
       e.target.disabled = true;
-      e.target.classList.toggle("cursor-not-allowed")
+      e.target.classList.toggle("cursor-not-allowed");
       axios
         .post(`/api/d/login`, {
           email: userLogin.email,
@@ -49,7 +49,7 @@ const Userlogin = () => {
           });
           notify("Email Not Found!", "error")();
           e.target.disabled = false;
-          e.target.classList.toggle("cursor-not-allowed")
+          e.target.classList.toggle("cursor-not-allowed");
         });
     } else {
       notify("Invalid Email", "error")();
@@ -228,9 +228,14 @@ const Userlogin = () => {
                 Accept
               </button>
             </div>
-            <Link className="text-xs" to="/admin">
-              Are you Admin?
-            </Link>
+            <div className="flex justify-between text-grey-500 font-bold">
+              <Link className="text-xs" to="/admin">
+                Are you Admin?
+              </Link>
+              <Link className="text-xs" to="/">
+                Home
+              </Link>
+            </div>
           </>
         )}
       </form>

@@ -1,5 +1,6 @@
 import { useRef, createContext, useState, useContext, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+
 import axios from "axios";
 
 import { toast, Slide } from "react-toastify";
@@ -7,6 +8,8 @@ import { toast, Slide } from "react-toastify";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const naviagate = useNavigate();
+
   const toastId = useRef(null);
   const [user, setUser] = useState({
     isAuthenticated: false,
@@ -67,6 +70,7 @@ export const AuthProvider = ({ children }) => {
           email: "",
         });
         localStorage.removeItem("user");
+        naviagate("/");
       })
       .catch((err) => {});
   };

@@ -9,11 +9,18 @@ export const PopUpFormManage = ({
   id,
   name,
   DeleteForm,
+  GetTemplates,
 }) => {
   const ref = useRef();
   const [deleteName, setDeleteName] = useState("");
   const [isChecked, setIsChecked] = useState(false);
+  const [isAccepting, setIsAccepting] = useState(false);
+  const [FormName, setFormName] = useState("");
   const { notify } = useContext(ClientContext);
+
+  useEffect(() => {
+    setFormName(name);
+  }, [name]);
 
   useEffect(() => {
     axios
@@ -25,12 +32,30 @@ export const PopUpFormManage = ({
       .then((res) => {
         if (res.data.success) {
           setIsChecked(res.data.check);
+          setIsAccepting(res.data.accept);
         }
       })
       .catch(() => {
         notify("Something went wrong");
       });
   }, []);
+
+  const UpdateFormName = useCallback(() => {
+    axios
+      .post(`/api/dashboard/form-name`, {
+        id: id,
+        name: FormName,
+      })
+      .then((res) => {
+        if (res.data.success) {
+          notify("Form name updated");
+          GetTemplates();
+        }
+      })
+      .catch(() => {
+        notify("Something went wrong");
+      });
+  }, [FormName, GetTemplates, id, notify]);
 
   const CompleteFormCheck = useCallback(() => {
     axios
@@ -48,7 +73,25 @@ export const PopUpFormManage = ({
       });
 
     // setIsChecked(!isChecked);
-  }, [id, isChecked]);
+  }, [id, isChecked, notify]);
+
+  const AcceptingFormCheck = useCallback(() => {
+    axios
+      .post(`/api/dashboard/form-accept`, {
+        id: id,
+      })
+      .then((res) => {
+        if (res.data.success) {
+          setIsAccepting(!isAccepting);
+          notify("Updated Successfully")();
+        }
+      })
+      .catch(() => {
+        notify("Something went wrong", "error")();
+      });
+
+    // setIsChecked(!isChecked);
+  }, [id, isAccepting, notify]);
 
   return (
     <div className="fixed z-50 right-0 top-0 bottom-0 backdrop-grayscale backdrop-blur-sm h-full w-full flex items-center justify-center">
@@ -92,6 +135,41 @@ export const PopUpFormManage = ({
               </button>
             </div>
             <div className="p-6">
+              <div class="mb-6">
+                <label
+                  htmlFor="form-name"
+                  class="block mb-2 text-xs font-medium text-white"
+                >
+                  Form Name :
+                </label>
+                <div className="flex justify-between">
+                  <input
+                    type="text"
+                    id="form-name"
+                    value={FormName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    className="shadow-sm bg-gray-50 border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5"
+                    required
+                  />
+                  <button
+                    className="bg-gray-50 p-2 rounded"
+                    onClick={UpdateFormName}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
               <div className="text-white flex gap-1 items-center">
                 <div>
                   <svg
@@ -170,40 +248,36 @@ export const PopUpFormManage = ({
                   </span>
                 </label>
               </div>
-              {isChecked && (
-                <div
-                  onClick={() => {
-                    navigator.clipboard
-                      .writeText(`http://localhost:8000/view/${id}`)
-                      .then(
-                        function () {
-                          setIsPopUp(!ispopup);
-                        },
-                        function (err) {}
-                      );
-                  }}
-                  className="bg-slate-500 p-2 flex hover:bg-slate-800 cursor-pointer place-content-center rounded gap-1 text-white text-sm"
+              <div className="my-6">
+                <label
+                  htmlFor="accept-example"
+                  className="flex relative items-center mb-4 cursor-pointer"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                    <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
-                  </svg>
-                  <div>Copy the link to</div>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                  </svg>
-                </div>
-              )}
+                  <input
+                    type="checkbox"
+                    id="accept-example"
+                    className="sr-only"
+                    checked={isAccepting}
+                    onChange={AcceptingFormCheck}
+                  />
+                  <div className="w-11 h-6 bg-gray-200 rounded-full border border-gray-200 toggle-bg dark:bg-gray-700 dark:border-gray-600"></div>
+                  <span className="flex items-center gap-1 ml-3 text-xs font-medium text-white">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <div>Form is Accepting</div>
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
