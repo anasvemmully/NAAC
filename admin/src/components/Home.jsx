@@ -1,6 +1,4 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable array-callback-return */
-// import { useEffect, useState } from "react";
+
 import { Link } from "react-router-dom";
 import React from "react";
 import axios from "axios";
@@ -54,10 +52,10 @@ const Home = () => {
         <SortFormSearcher />
       </div>
 
-      <footer class="p-4 bg-white rounded-lg shadow md:flex md:items-center md:justify-between md:p-6 dark:bg-gray-800">
-        <span class="px-5 sm:px-12 text-sm font-bold text-gray-500 sm:text-center dark:text-gray-400">
+      <footer className="p-4 bg-white rounded-lg shadow md:flex md:items-center md:justify-between md:p-6 dark:bg-gray-800">
+        <span className="px-5 sm:px-12 text-sm font-bold text-gray-500 sm:text-center dark:text-gray-400">
           © 2022{" "}
-          <Link href="#" class="font- hover:underline">
+          <Link to="/" className="font- hover:underline">
             Form Builder™
           </Link>
           . All Rights Reserved.
