@@ -4,6 +4,7 @@ const Template = require("../models/template");
 const Member = require("../models/member");
 const User = require("../models/users");
 const OTP = require("../models/otp");
+// const path = require("path");
 
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
@@ -253,6 +254,14 @@ const AdminGetDashboardActiveTemplate = async (req, res, next) => {
             name: "Untitled Form",
           });
           user.template.push(template._id);
+          template.layout.push({
+            title: "",
+            type: "section",
+            parent: null,
+            level: 0,
+            data: [],
+            keyword: null,
+          });
           user.save((err, user) => {
             if (err) {
               res.status(500).send({
@@ -281,67 +290,64 @@ const AdminGetDashboardActiveTemplate = async (req, res, next) => {
 };
 
 const AdminPostDashboardActiveTemplate = async (req, res, next) => {
-  try {
-    const { TemplateId } = req.params;
-    await Template.exists({ _id: TemplateId }).then((exists) => {
-      if (exists) {
-        Template.findOne({
-          _id: TemplateId,
-        })
-          .then((template) => {
-            if (template !== null) {
-              template.islive = true;
-              template.isActive = false;
-
-              dict = {};
-              template.layout.map((e, index) => {
-                if (e.type === "item") {
-                  for (i in e.data) {
-                    if (e.data[i] === true) {
-                      if (dict[index]) {
-                        dict[index][i] = {};
-                      } else {
-                        dict[index] = {
-                          [i]: {},
-                        };
-                      }
-                    }
-                  }
-                }
-              });
-
-              template.handle.publish = dict;
-              template.handle.role = {};
-              template.handle.indexRole = {};
-
-              template.save().then((template) => {
-                res.status(200).send({
-                  message: "Template Updated",
-                });
-              });
-            }
-          })
-          .catch((err) => {
-            res.status(500).send({
-              message: "Internal Server Error",
-            });
-          });
-      } else {
-        res.status(404).send({
-          message: "Something went Wrong",
-        });
-      }
-    });
-  } catch (err) {
-    res.status(500).send({
-      message: "Internal Server Error",
-    });
-  }
+  // try {
+  //   const { TemplateId } = req.params;
+  //   await Template.exists({ _id: TemplateId }).then((exists) => {
+  //     if (exists) {
+  //       Template.findOne({
+  //         _id: TemplateId,
+  //       })
+  //         .then((template) => {
+  //           if (template !== null) {
+  //             template.islive = true;
+  //             template.isActive = false;
+  //             dict = {};
+  //             template.layout.map((e, index) => {
+  //               if (e.type === "item") {
+  //                 for (i in e.data) {
+  //                   if (e.data[i] === true) {
+  //                     if (dict[index]) {
+  //                       dict[index][i] = {};
+  //                     } else {
+  //                       dict[index] = {
+  //                         [i]: {},
+  //                       };
+  //                     }
+  //                   }
+  //                 }
+  //               }
+  //             });
+  //             template.handle.publish = dict;
+  //             template.handle.role = {};
+  //             template.handle.indexRole = {};
+  //             template.save().then((template) => {
+  //               res.status(200).send({
+  //                 message: "Template Updated",
+  //               });
+  //             });
+  //           }
+  //         })
+  //         .catch((err) => {
+  //           res.status(500).send({
+  //             message: "Internal Server Error",
+  //           });
+  //         });
+  //     } else {
+  //       res.status(404).send({
+  //         message: "Something went Wrong",
+  //       });
+  //     }
+  //   });
+  // } catch (err) {
+  //   res.status(500).send({
+  //     message: "Internal Server Error",
+  //   });
+  // }
 };
 
 const AdminGetUser = async (req, res, next) => {
   try {
-    await Member.find({}).then((members) => {
+    await Member.find({ ParentID: req.user.id }).then((members) => {
       res.status(200).send({
         message: "Users Found",
         user: members,
@@ -372,13 +378,11 @@ const AdminPostUser = async (req, res, next) => {
         });
       })
       .catch((err) => {
-        res.status(500).send({
-          success: false,
-        });
+        throw new Error("something went wrong !");
       });
   } catch (err) {
     res.status(500).send({
-      message: "Internal Server Error",
+      message: err.message,
     });
   }
 };
@@ -549,16 +553,25 @@ const AdminPostRoleUser = async (req, res, next) => {
   try {
     const { email, start, end, template_id } = req.body;
     await Template.findById({ _id: template_id }).then((template) => {
+      if (
+        template.handle?.role === undefined ||
+        template.handle?.role === null
+      ) {
+        template.handle.role = {};
+      }
       if (Object.keys(template.handle.role).includes(email)) {
-        res.status(200).send({
-          message: "User Already Exists",
-        });
+        throw new Error("User already exists !");
       } else {
         template.handle.role = {
           ...template.handle.role,
           [email]: [start, end],
         };
-
+        if (
+          template.handle?.indexRole === undefined ||
+          template.handle?.indexRole === null
+        ) {
+          template.handle.indexRole = {};
+        }
         const expand =
           template.handle.indexRole[start] === undefined
             ? []
@@ -577,7 +590,7 @@ const AdminPostRoleUser = async (req, res, next) => {
     });
   } catch (err) {
     res.status(500).send({
-      message: "Internal Server Error",
+      message: err.message,
     });
   }
 };
@@ -612,7 +625,7 @@ const AdminDeleteRoleUser = async (req, res, next) => {
     });
   } catch (error) {
     res.status(500).send({
-      message: error.message,
+      message: "Something went wrong !",
       success: false,
     });
   }
@@ -624,7 +637,7 @@ const ClientPostLogin = async (req, res, next) => {
   try {
     const { email } = req.body;
     await OTP.deleteMany({
-      email : email,
+      email: email,
     }).then(async () => {
       await Member.findOne({ email }).then(async (member) => {
         if (member !== null) {
@@ -866,8 +879,8 @@ const ClientGetDashboard = async (req, res, next) => {
         const temp = user_member.template
           ?.filter(
             (e) =>
-              !e.isComplete &&
-              e.islive &&
+              e.isComplete === false &&
+              e.isAccepting === true &&
               Object.keys(e.handle.role).includes(req.email)
           )
           .map((e, i) => {
@@ -1130,19 +1143,13 @@ const AdminPostDashboardView = async (req, res, next) => {
 
 const AdminPostFileInfo = async (req, res, next) => {
   try {
-    const { templateid, index, file_type } = req.body;
-
+    const { templateid, index } = req.body;
     await Template.findById(templateid).then((t) => {
       if (t) {
-        if (file_type === "web") {
-          file_name = t.handle.publish[index][file_type].web;
-        } else {
-          file_name = t.handle.publish[index][file_type].name;
-        }
         res.status(200).send({
           message: "Success",
           success: true,
-          file: file_name ? file_name : "",
+          file: t.layout[index]?.data,
         });
       } else {
         throw new Error("Something Went Wrong !");
@@ -1158,101 +1165,83 @@ const AdminPostFileInfo = async (req, res, next) => {
 
 const AdminPostUploadFile = async (req, res, next) => {
   try {
-    var { templateid, index, file_type, webLink } = JSON.parse(req.body.misc);
-    if (file_type && file_type !== "web") {
-      var type = "";
+    var { templateid, index } = JSON.parse(req.body.misc);
+    var type = "";
 
-      if (!req.files) {
-        throw new Error("No file uploaded");
-      } else {
-        if (
-          req.files.file.mimetype.startsWith("image/") ||
-          req.files.file.mimetype.endsWith("jpeg") ||
-          req.files.file.mimetype.endsWith("jpg") ||
-          req.files.file.mimetype.endsWith("png")
-        ) {
-          if (req.files.file.size > 1000000) {
-            throw new Error("File size is too large");
-          }
-          type = "image";
-        }
-        //check fot text file
-        else if (
-          req.files.file.mimetype.startsWith("text/") ||
-          req.files.file.mimetype.endsWith("plain")
-        ) {
-          if (req.files.file.size > 500000) {
-            throw new Error("File size is too large");
-          }
-          type = "text";
-        }
-        //check for pdf file
-        else if (req.files.file.mimetype.startsWith("application/pdf")) {
-          if (req.files.file.size > 10000000) {
-            throw new Error("File size is too large");
-          }
-          type = "pdf";
-        }
-        //check for excel file
-        else if (
-          req.files.file.mimetype.startsWith("application/vnd.ms-excel") ||
-          req.files.file.mimetype.startsWith(
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          )
-        ) {
-          if (req.files.file.size > 1000000) {
-            throw new Error("File size is too large");
-          }
-          type = "excel";
-        } else {
-          throw new Error("Invalid File Type");
-        }
-
-        await Template.findById(templateid).then((t) => {
-          if (t) {
-            if (fs.existsSync(t.handle.publish[index][type].path)) {
-              fs.unlinkSync(t.handle.publish[index][type].path);
-            }
-            const file = req.files.file;
-            const file_name = `${uuidv4()}.${file.name.split(".").pop()}`;
-            const path = `./uploads/${file_name}`;
-            file.mv(path, async (err) => {
-              if (err) {
-                throw new Error("something went wrong !");
-              } else {
-                if (t) {
-                  t.handle.publish[index][type] = {
-                    path: path,
-                    file_name: file_name,
-                    name: file.name,
-                  };
-                  t.markModified("handle.publish");
-                  t.save().then((t) => {
-                    res.status(200).send({
-                      message: "File Uploaded Successfully",
-                      success: true,
-                    });
-                  });
-                } else {
-                  throw new Error("Something Went Wrong !");
-                }
-              }
-            });
-          }
-        });
-      }
+    if (!req.files) {
+      throw new Error("No file uploaded");
     } else {
+      if (
+        req.files.file.mimetype.startsWith("image/") ||
+        req.files.file.mimetype.endsWith("jpeg") ||
+        req.files.file.mimetype.endsWith("jpg") ||
+        req.files.file.mimetype.endsWith("png")
+      ) {
+        if (req.files.file.size > 1000000) {
+          throw new Error("File size is too large");
+        }
+        type = "image";
+      }
+      //check fot text file
+      else if (
+        req.files.file.mimetype.startsWith("text/") ||
+        req.files.file.mimetype.endsWith("plain")
+      ) {
+        if (req.files.file.size > 500000) {
+          throw new Error("File size is too large");
+        }
+        type = "text";
+      }
+      //check for pdf file
+      else if (req.files.file.mimetype.startsWith("application/pdf")) {
+        if (req.files.file.size > 10000000) {
+          throw new Error("File size is too large");
+        }
+        type = "pdf";
+      }
+      //check for excel file
+      else if (
+        req.files.file.mimetype.startsWith("application/vnd.ms-excel") ||
+        req.files.file.mimetype.startsWith(
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+      ) {
+        if (req.files.file.size > 1000000) {
+          throw new Error("File size is too large");
+        }
+        type = "excel";
+      } else {
+        throw new Error("Invalid File Type");
+      }
+
       await Template.findById(templateid).then((t) => {
-        t.handle.publish[index][file_type] = {
-          web: webLink,
-        };
-        t.markModified("handle.publish");
-        t.save().then((t) => {
-          res.status(200).send({
-            message: "Web Link Updated Successfully",
-            success: true,
+        if (t) {
+          const file = req.files.file;
+          const file_name = `${uuidv4()}.${file.name.split(".").pop()}`;
+          const path = `./uploads/${file_name}`;
+          file.mv(path, async (err) => {
+            if (err) {
+              throw new Error("something went wrong !");
+            } else {
+              // if (t) {
+              t.layout[index].data = [
+                ...(t.layout[index].data === null ? [] : t.layout[index].data),
+                {
+                  path: path,
+                  file_name: file_name,
+                  name: file.name,
+                },
+              ];
+              t.markModified("layout");
+              t.save().then((t) => {
+                res.status(200).send({
+                  message: "File Uploaded Successfully",
+                  success: true,
+                });
+              });
+            }
           });
-        });
+        }
       });
     }
   } catch (error) {
@@ -1269,24 +1258,27 @@ const AdminDeleteForm = async (req, res, next) => {
 
     await Template.findById(id).then((m) => {
       if (m) {
-        for (i of Object.values(m.handle.publish)) {
-          for (j of Object.values(i)) {
-            if (Object.keys(j).length !== 0) {
-              if (fs.existsSync(j.path)) {
-                fs.unlinkSync(j.path);
-              }
+        for (i of Object.values(m.layout)) {
+          if (i.data !== null) {
+            for (j of i.data) {
+              fs.unlink(j.path, (err) => {
+                if (err) {
+                }
+              });
             }
           }
         }
-        User.findById({ _id: req.user._id }).then((user) => {
-          let tmp = user.template;
-          let index = tmp.indexOf(id);
-          user.template = [...tmp.slice(0, index), ...tmp.slice(index + 1)];
-          user.markModified("template");
-          user.save().then(() => {
-            res.status(200).send({
-              message: "Success",
-              success: true,
+        Template.findByIdAndDelete(id).then((t) => {
+          User.findById({ _id: req.user._id }).then((user) => {
+            let tmp = user.template;
+            let index = tmp.indexOf(id);
+            user.template = [...tmp.slice(0, index), ...tmp.slice(index + 1)];
+            user.markModified("template");
+            user.save().then(() => {
+              res.status(200).send({
+                message: "Success",
+                success: true,
+              });
             });
           });
         });
@@ -1306,15 +1298,36 @@ const AdminCompletePostForm = async (req, res, next) => {
 
     await Template.findById(id).then((t) => {
       if (t) {
-        if (t.islive === true && t.isActive === false) {
-          t.isComplete = !t.isComplete;
-          t.save().then((t) => {
-            res.status(200).send({
-              message: "Success",
-              success: true,
-            });
+        t.isComplete = !t.isComplete;
+        t.save().then((t) => {
+          res.status(200).send({
+            message: "Success",
+            success: true,
           });
-        }
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Something Went Wrong",
+    });
+  }
+};
+
+const AdminAcceptingPostForm = async (req, res, next) => {
+  try {
+    const { id } = req.body;
+
+    await Template.findById(id).then((t) => {
+      if (t) {
+        t.isAccepting = !t.isAccepting;
+        t.save().then((t) => {
+          res.status(200).send({
+            message: "Success",
+            success: true,
+          });
+        });
       }
     });
   } catch (error) {
@@ -1330,14 +1343,11 @@ const AdminCompleteGetForm = async (req, res, next) => {
     const { id } = req.query;
     await Template.findById(id).then((t) => {
       if (t) {
-        if (t.islive === true && t.isActive === false) {
-          t.save().then((t) => {
-            res.status(200).send({
-              check: t.isComplete,
-              success: true,
-            });
-          });
-        }
+        res.status(200).send({
+          check: t.isComplete,
+          accept: t.accept,
+          success: true,
+        });
       }
     });
   } catch (error) {
@@ -1350,18 +1360,53 @@ const AdminCompleteGetForm = async (req, res, next) => {
 
 const AdminClientPostDeleteFile = async (req, res, next) => {
   try {
-    const { index, type, templateid } = req.body;
+    const { index, fileIndex, templateid, path } = req.body;
 
     await Template.findById(templateid).then((t) => {
       if (t) {
-        if (fs.existsSync(t.handle.publish[index][type].path)) {
-          fs.unlinkSync(t.handle.publish[index][type].path);
+        if (fs.existsSync(path)) {
+          fs.unlinkSync(path);
         }
-        t.handle.publish[index][type] = {};
-        t.markModified("handle.publish");
+        t.layout[index].data = [
+          ...t.layout[index].data.slice(0, fileIndex),
+          ...t.layout[index].data.slice(fileIndex + 1),
+        ];
+        t.markModified("layout");
         t.save().then((t) => {
           res.status(200).send({
             message: "File Deleted",
+            success: true,
+          });
+        });
+      } else {
+        throw new Error("Something went wrong");
+      }
+    });
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+//version2 updates
+const AdminTemplateAddSection = async (req, res, next) => {
+  try {
+    const { index, templateName, id } = req.body;
+    Template.findById(id).then((t) => {
+      if (t) {
+        t.layout.push({
+          title: "",
+          type: "section",
+          parent: null,
+          level: 0,
+          data: [],
+          keyword: null,
+        });
+        t.save().then((t) => {
+          res.status(200).send({
+            message: "Section Added",
             success: true,
           });
         });
@@ -1373,6 +1418,418 @@ const AdminClientPostDeleteFile = async (req, res, next) => {
     res.status(500).send({
       success: false,
       message: "Something Went Wrong",
+    });
+  }
+};
+
+const AdminTemplateAddChild = async (req, res, next) => {
+  try {
+    const { index, id, level } = req.body;
+    Template.findById(id).then((t) => {
+      if (t) {
+        var i = index + 1;
+        for (i; i < t.layout.length; i++) {
+          if (t.layout[i].level < level || t.layout[i].level === level) {
+            break;
+          }
+        }
+        t.layout = [
+          ...t.layout.slice(0, i),
+          {
+            title: "",
+            type: "item",
+            parent: index,
+            level: level + 1,
+            data: [],
+          },
+          ...t.layout.slice(i),
+        ];
+        t.save().then((t) => {
+          res.status(200).send({
+            message: "Child Added",
+            success: true,
+          });
+        });
+      } else {
+        throw new Error("Something went wrong");
+      }
+    });
+  } catch {
+    res.status(500).send({
+      success: false,
+      message: "Something Went Wrong",
+    });
+  }
+};
+
+const AdminTemplateUpdateChild = async (req, res, next) => {
+  try {
+    const { index, id, data } = req.body;
+    Template.findById(id).then((t) => {
+      if (t) {
+        if (t.layout[index].type === "item" && data.type === "section") {
+          for (k of t.layout[index].data) {
+            if (fs.existsSync(k.path)) {
+              fs.unlinkSync(k.path);
+            } else {
+              throw new Error("Something went wrong !");
+            }
+          }
+        }
+        t.layout[index] = data;
+        t.save().then((t) => {
+          res.status(200).send({
+            message: "Child Updated",
+            success: true,
+          });
+        });
+      } else {
+        throw new Error("Something went wrong");
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Something Went Wrong",
+    });
+  }
+};
+
+const AdminTemplateDeleteChild = async (req, res, next) => {
+  try {
+    const { id, index, level } = req.body;
+    Template.findById(id).then((t) => {
+      if (t) {
+        var i = index + 1;
+        for (i; i < t.layout.length; i++) {
+          if (t.layout[i].type === "item") {
+            if (t.layout[i].data?.length > 0) {
+              for (k of t.layout[i].data) {
+                if (fs.existsSync(k.path)) {
+                  fs.unlinkSync(k.path);
+                } else {
+                  throw new Error("Something went wrong !");
+                }
+              }
+            }
+            t.layout[i].data = [];
+          }
+
+          if (t.layout[i].level < level || t.layout[i].level === level) {
+            break;
+          }
+        }
+        t.layout = [...t.layout.slice(0, index), ...t.layout.slice(i)];
+        t.save().then((t) => {
+          res.status(200).send({
+            message: "Child Deleted",
+            success: true,
+          });
+        });
+      } else {
+        throw new Error("Something went wrong");
+      }
+    });
+  } catch {
+    res.status(500).send({
+      success: false,
+      message: "Something Went Wrong",
+    });
+  }
+};
+
+const AdminPostDownloadFileInfo = async (req, res, next) => {
+  try {
+    var { templateid, index, file } = req.query;
+    file = JSON.parse(file);
+    await Template.findById(templateid).then((t) => {
+      if (t) {
+        if (fs.existsSync(file.path)) {
+          res.sendFile(
+            file.file_name,
+            {
+              headers: {
+                "Content-Disposition": `attachment; ${file.file_name}`,
+              },
+              root: "./uploads/",
+            },
+            (err) => {
+              if (err) {
+                next(err);
+              } else {
+              }
+            }
+          );
+        } else {
+          throw new Error("File Not Found");
+        }
+      } else {
+        throw new Error("Something Went Wrong !");
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const AdminPostKeyword = async (req, res, next) => {
+  try {
+    const { keyword } = req.body;
+
+    User.findById(req.user.id).then((t) => {
+      if (t) {
+        if (!t.keywords.includes(keyword)) {
+          t.keywords.push(keyword);
+          t.markModified("keywords");
+          t.save().then((t) => {
+            res.status(200).send({
+              message: "Keyword Updated",
+              success: true,
+            });
+          });
+        } else {
+          throw new Error("Keyword Already Exists");
+        }
+      } else {
+        throw new Error("Something went wrong");
+      }
+    });
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+const AdmingetKeyword = async (req, res, next) => {
+  try {
+    const { id, index } = req.query;
+    await User.findById(req.user.id).then(async (t) => {
+      if (t) {
+        if (t.keywords) {
+          let KEYWORDS = t.keywords;
+          await Template.findById(id).then((temp) => {
+            if (temp) {
+              for (i of temp.layout) {
+                if (i.type === "section" && i.level === 0 && i.keyword) {
+                  if (KEYWORDS.includes(i.keyword)) {
+                    KEYWORDS = [...KEYWORDS.filter((k) => k !== i.keyword)];
+                  }
+                }
+              }
+              res.status(200).send({
+                keywords: KEYWORDS,
+                key: temp.layout[index].keyword,
+                success: true,
+              });
+            } else {
+              res.status(200).send({
+                keywords: KEYWORDS,
+                success: true,
+                // key: temp.layout[index].keyword,
+              });
+            }
+          });
+        } else {
+          throw new Error("Something went wrong");
+        }
+      } else {
+        throw new Error("Something went wrong");
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const AdminDeleteKeyword = async (req, res, next) => {
+  try {
+    const { keyword } = req.body;
+    User.findById(req.user.id).then((t) => {
+      if (t) {
+        if (t.keywords.includes(keyword)) {
+          t.keywords = t.keywords.filter((k) => k !== keyword);
+          t.markModified("keywords");
+
+          for (id of t.template) {
+            Template.findById(id).then((t) => {
+              if (t) {
+                for (j in t.layout) {
+                  if (
+                    t.layout[j].level === 0 &&
+                    t.layout[j].type === "section" &&
+                    t.layout[j].keyword !== null
+                  ) {
+                    t.layout[j].keyword = null;
+                    break;
+                  }
+                }
+                t.markModified("layout");
+                t.save();
+              }
+            });
+          }
+          t.save().then((t) => {
+            res.status(200).send({
+              message: "Keyword Deleted",
+              success: true,
+            });
+          });
+        } else {
+          throw new Error("Keyword Not Found");
+        }
+      } else {
+        throw new Error("Something went wrong");
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const AdminPutKeyword = async (req, res, next) => {
+  try {
+    const { id, index, keyword } = req.body;
+    Template.findById(id).then((t) => {
+      if (t) {
+        t.layout[index].keyword = keyword;
+        t.markModified("layout");
+        t.save().then((t) => {
+          res.status(200).send({
+            message: "Keyword Updated",
+            success: true,
+          });
+        });
+      } else {
+        throw new Error("Something went wrong");
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const AdminUpdateFormName = async (req, res, next) => {
+  try {
+    const { id, name } = req.body;
+    Template.findById(id).then((t) => {
+      if (t) {
+        t.name = name;
+        t.save().then((t) => {
+          res.status(200).send({
+            message: "Form Name Updated",
+            success: true,
+          });
+        });
+      } else {
+        throw new Error("Something went wrong");
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const PublicGetAllTemplate = async (req, res, next) => {
+  try {
+    await User.findOne({ role: "ADMIN" }).then(async (user) => {
+      if (user) {
+        var TEMPLATE = [];
+        for (id of user.template) {
+          await Template.findById(id).then((t) => {
+            if (t) {
+              TEMPLATE.push(t);
+            }
+          });
+        }
+        TEMPLATE = TEMPLATE.filter(
+          (t) => t.isComplete === true && t.isAccepting === false
+        );
+        TEMPLATE = TEMPLATE.map((t) => {
+          return {
+            id: t._id,
+            name: t.name,
+            layout: t.layout,
+          };
+        });
+        res.status(200).send({
+          success: true,
+          templates: TEMPLATE,
+          keywords: user.keywords,
+        });
+      } else {
+        throw new Error("Something went wrong");
+      }
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: error.message,
+      success: false,
+    });
+  }
+};
+
+const PublicGetImage = async (req, res, next) => {
+  try {
+    const file = req.url.split("/").pop();
+    const contentType = `image/${path.extname(file).slice(1)}`;
+    res.writeHead(200, {
+      "Content-Type": contentType,
+    });
+    fs.readFile(`./uploads/${file}`, function (err, content) {
+      // Serving the image
+      res.end(content);
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const PublicDownloadFile = async (req, res, next) => {
+  try {
+    const { file_name } = req.query;
+    if (fs.existsSync(`./uploads/${file_name}`)) {
+      res.sendFile(
+        file_name,
+        {
+          headers: {
+            "Content-Disposition": `attachment; ${file_name}`,
+          },
+          root: "./uploads/",
+        },
+        (err) => {
+          if (err) {
+            next(err);
+          } else {
+          }
+        }
+      );
+    } else {
+      throw new Error("File Not Found");
+    }
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message,
     });
   }
 };
@@ -1398,6 +1855,19 @@ module.exports = {
   AdminCompletePostForm,
   AdminCompleteGetForm,
 
+  //version2 updates
+  AdminTemplateAddSection,
+  AdminTemplateAddChild,
+  AdminTemplateUpdateChild,
+  AdminTemplateDeleteChild,
+  AdminPostDownloadFileInfo,
+  AdminPostKeyword,
+  AdmingetKeyword,
+  AdminDeleteKeyword,
+  AdminPutKeyword,
+  AdminAcceptingPostForm,
+  AdminUpdateFormName,
+
   AdminPostDashboardView,
   AdminPostFileInfo,
   AdminPostUploadFile,
@@ -1414,4 +1884,8 @@ module.exports = {
   ClientPostUploadFile,
   ClientGetDownloadFile,
   ClientPostFileInfo,
+
+  PublicGetAllTemplate,
+  PublicGetImage,
+  PublicDownloadFile,
 };

@@ -74,7 +74,7 @@ app.use(passport.session());
 require('./passport')(passport);
 
 
-app.use('/', indexRouter);
+// app.use('/', indexRouter);
 app.use('/api/', adminRouter);
 
 // catch 404 and forward to error handler

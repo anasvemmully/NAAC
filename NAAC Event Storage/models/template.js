@@ -4,21 +4,24 @@ const Schema = mongoose.Schema;
 //create user model
 const TemplateSchema = new Schema(
   {
-    islive: {
-      type: Boolean,
-      default: false,
-    },
+    // islive: {
+    //   type: Boolean,
+    //   default: false,
+    // },
     isComplete: {
       type: Boolean,
       default: false,
     },
-    isActive: {
+    isAccepting: {
       type: Boolean,
       default: true,
     },
+    // isActive: {
+    //   type: Boolean,
+    //   default: true,
+    // },
     name: {
       type: String,
-      required: true,
       trim: true,
       minLength: 2,
     },

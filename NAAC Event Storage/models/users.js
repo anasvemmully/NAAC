@@ -32,6 +32,7 @@ const UserSchema = new Schema({
     password: {
         type: String
     },
+    keywords: [],
     template : [
         {
             type: mongoose.Types.ObjectId,
