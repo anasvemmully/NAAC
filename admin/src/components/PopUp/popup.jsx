@@ -44,7 +44,7 @@ const Popup = (props) => {
   useEffect(() => {
     getInfo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Data.index, notify, templateID]);
+  }, [Data]);
 
   const getInfo = React.useCallback(() => {
     axios

@@ -867,6 +867,7 @@ const ClientPostLogout = async (req, res, next) => {
 
 const ClientGetDashboard = async (req, res, next) => {
   try {
+    // console.log(req.userid);
     await Member.findById(req.userid).then(async (member) => {
       if (member) {
         const user_member = await User.findById(member.ParentId)
@@ -877,12 +878,13 @@ const ClientGetDashboard = async (req, res, next) => {
           })
           .exec();
         const temp = user_member.template
-          ?.filter(
-            (e) =>
+          ?.filter((e) => {
+            return (
               e.isComplete === false &&
               e.isAccepting === true &&
               Object.keys(e.handle.role).includes(req.email)
-          )
+            );
+          })
           .map((e, i) => {
             return {
               name: e.name,
@@ -900,6 +902,7 @@ const ClientGetDashboard = async (req, res, next) => {
       }
     });
   } catch (error) {
+    console.log(error);
     res.status(500).send({
       status: false,
       message: error.message,
@@ -1294,11 +1297,11 @@ const AdminDeleteForm = async (req, res, next) => {
 
 const AdminCompletePostForm = async (req, res, next) => {
   try {
-    const { id } = req.body;
+    const { id, v } = req.body;
 
     await Template.findById(id).then((t) => {
       if (t) {
-        t.isComplete = !t.isComplete;
+        t.isComplete = v;
         t.save().then((t) => {
           res.status(200).send({
             message: "Success",
@@ -1317,11 +1320,11 @@ const AdminCompletePostForm = async (req, res, next) => {
 
 const AdminAcceptingPostForm = async (req, res, next) => {
   try {
-    const { id } = req.body;
+    const { id, v } = req.body;
 
     await Template.findById(id).then((t) => {
       if (t) {
-        t.isAccepting = !t.isAccepting;
+        t.isAccepting = v;
         t.save().then((t) => {
           res.status(200).send({
             message: "Success",
@@ -1345,7 +1348,7 @@ const AdminCompleteGetForm = async (req, res, next) => {
       if (t) {
         res.status(200).send({
           check: t.isComplete,
-          accept: t.accept,
+          accept: t.isAccepting,
           success: true,
         });
       }
@@ -1364,6 +1367,7 @@ const AdminClientPostDeleteFile = async (req, res, next) => {
 
     await Template.findById(templateid).then((t) => {
       if (t) {
+        console.log(path);
         if (fs.existsSync(path)) {
           fs.unlinkSync(path);
         }
@@ -1501,23 +1505,36 @@ const AdminTemplateDeleteChild = async (req, res, next) => {
     Template.findById(id).then((t) => {
       if (t) {
         var i = index + 1;
-        for (i; i < t.layout.length; i++) {
-          if (t.layout[i].type === "item") {
-            if (t.layout[i].data?.length > 0) {
-              for (k of t.layout[i].data) {
-                if (fs.existsSync(k.path)) {
-                  fs.unlinkSync(k.path);
-                } else {
-                  throw new Error("Something went wrong !");
+        if (t.layout[i].type === "section") {
+          for (i; i < t.layout.length; i++) {
+            if (t.layout[i].type === "item") {
+              console.log(t.layout[i].data);
+              if (t.layout[i].data?.length > 0) {
+                for (k of t.layout[i].data) {
+                  console.log(k);
+                  if (fs.existsSync(k.path)) {
+                    fs.unlinkSync(k.path);
+                  } else {
+                    throw new Error("Something went wrong !");
+                  }
                 }
               }
+              t.layout[i].data = [];
             }
-            t.layout[i].data = [];
-          }
 
-          if (t.layout[i].level < level || t.layout[i].level === level) {
-            break;
+            if (t.layout[i].level < level || t.layout[i].level === level) {
+              break;
+            }
           }
+        } else {
+          for (k of t.layout[index].data) {
+            if (fs.existsSync(k.path)) {
+              fs.unlinkSync(k.path);
+            } else {
+              throw new Error("Something went wrong !");
+            }
+          }
+          t.layout[i].data = [];
         }
         t.layout = [...t.layout.slice(0, index), ...t.layout.slice(i)];
         t.save().then((t) => {
@@ -1591,14 +1608,17 @@ const AdminPostKeyword = async (req, res, next) => {
             });
           });
         } else {
-          throw new Error("Keyword Already Exists");
+          res.status(200).send({
+            message: "Keyword Already Exists",
+            success: true,
+          });
         }
       } else {
         throw new Error("Something went wrong");
       }
     });
   } catch (err) {
-    res.status(500).send({
+    res.status(503).send({
       success: false,
       message: err.message,
     });
@@ -1806,26 +1826,36 @@ const PublicGetImage = async (req, res, next) => {
 
 const PublicDownloadFile = async (req, res, next) => {
   try {
-    const { file_name } = req.query;
-    if (fs.existsSync(`./uploads/${file_name}`)) {
-      res.sendFile(
-        file_name,
-        {
-          headers: {
-            "Content-Disposition": `attachment; ${file_name}`,
-          },
-          root: "./uploads/",
-        },
-        (err) => {
-          if (err) {
-            next(err);
+    const { id, file_name } = req.query;
+    Template.findById(id).then((t) => {
+      if (t) {
+        if (t.isComplete === true && t.isAccepting === false) {
+          if (fs.existsSync(`./uploads/${file_name}`)) {
+            res.sendFile(
+              file_name,
+              {
+                headers: {
+                  "Content-Disposition": `attachment; ${file_name}`,
+                },
+                root: "./uploads/",
+              },
+              (err) => {
+                if (err) {
+                  next(err);
+                } else {
+                }
+              }
+            );
           } else {
+            throw new Error("File Not Found");
           }
+        } else {
+          throw new Error("Something went wrong !");
         }
-      );
-    } else {
-      throw new Error("File Not Found");
-    }
+      } else {
+        throw new Error("Something went wrong !");
+      }
+    });
   } catch (error) {
     res.status(500).send({
       success: false,

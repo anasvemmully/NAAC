@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import React from "react";
 import axios from "axios";
@@ -66,6 +65,8 @@ const Home = () => {
 };
 
 const SortFormSearcher = () => {
+  const FilterRef = React.useRef();
+
   const [searchList, setSearchList] = React.useState([]);
   const [KeywordList, setKeywordList] = React.useState([]);
   const [SearchTemplates, setSearchTemplates] = React.useState("");
@@ -73,6 +74,10 @@ const SortFormSearcher = () => {
   const [Selectedtemplate, setSelectedtemplate] = React.useState([]);
 
   React.useEffect(() => {
+    GetTemplate();
+  }, []);
+
+  const GetTemplate = React.useCallback(() => {
     axios
       .get("/api/view/template")
       .then((res) => {
@@ -91,7 +96,7 @@ const SortFormSearcher = () => {
     (ele) => {
       setSearchTemplates(
         searchList.filter((e) =>
-          e.name.toLowerCase().includes(ele.target.value.toLowerCase())
+          e.name.toLowerCase().includes(FilterRef.current.value.toLowerCase())
         )
       );
     },
@@ -125,6 +130,7 @@ const SortFormSearcher = () => {
           </div>
           <input
             type="text"
+            ref={FilterRef}
             onChange={filterTemplate}
             id="email-adress-icon"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-2/3 md:w-2/5 lg:w-1/3 pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -175,6 +181,7 @@ const SortFormSearcher = () => {
         <div className="pl-4 ">
           {Selectedtemplate.length !== 0 &&
             Selectedtemplate.layout.map((e, index) => {
+              console.log(e);
               return (
                 <TemplateView
                   key={index}
@@ -199,6 +206,7 @@ const TemplateView = ({ data, manageTemplateId, manageTemplate, index }) => {
       axios
         .get(`/api/view/download`, {
           params: {
+            id: manageTemplateId,
             file_name: file.file_name,
           },
           responseType: "blob",
@@ -210,29 +218,36 @@ const TemplateView = ({ data, manageTemplateId, manageTemplate, index }) => {
   let style = {
     marginLeft: `${data.level * 3}rem`,
   };
-
-  if (data.type === "section" && data.level === 0) {
-    return (
-      <div className="flex items-center py-1" style={style}>
-        <div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
+  if (data.type === "section") {
+    if (data.level === 0) {
+      return (
+        <div className="flex items-center py-1" style={style}>
+          <div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <div>{data.title}</div>
         </div>
-        <div>{data.title}</div>
-      </div>
-    );
+      );
+    } else {
+      return (
+        <div className="flex items-center py-1" style={style}>
+          <div>{data.title}</div>
+        </div>
+      );
+    }
   } else if (data.type === "item") {
     return (
       <div className="p-3 ml-7 border mb-2 rounded" style={style}>

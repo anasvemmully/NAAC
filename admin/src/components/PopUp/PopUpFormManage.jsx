@@ -20,7 +20,7 @@ export const PopUpFormManage = ({
 
   useEffect(() => {
     setFormName(name);
-  }, [name]);
+  }, []);
 
   useEffect(() => {
     axios
@@ -57,10 +57,11 @@ export const PopUpFormManage = ({
       });
   }, [FormName, GetTemplates, id, notify]);
 
-  const CompleteFormCheck = useCallback(() => {
+  const CompleteFormCheck = useCallback((e) => {
     axios
       .post(`/api/dashboard/form-complete`, {
         id: id,
+        v : e.target.checked,
       })
       .then((res) => {
         if (res.data.success) {
@@ -75,10 +76,12 @@ export const PopUpFormManage = ({
     // setIsChecked(!isChecked);
   }, [id, isChecked, notify]);
 
-  const AcceptingFormCheck = useCallback(() => {
+  const AcceptingFormCheck = useCallback((e) => {
     axios
       .post(`/api/dashboard/form-accept`, {
         id: id,
+        v : e.target.checked,
+
       })
       .then((res) => {
         if (res.data.success) {
@@ -135,10 +138,10 @@ export const PopUpFormManage = ({
               </button>
             </div>
             <div className="p-6">
-              <div class="mb-6">
+              <div className="mb-6">
                 <label
                   htmlFor="form-name"
-                  class="block mb-2 text-xs font-medium text-white"
+                  className="block mb-2 text-xs font-medium text-white"
                 >
                   Form Name :
                 </label>
